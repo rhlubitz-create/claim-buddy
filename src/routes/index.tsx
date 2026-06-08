@@ -1,29 +1,42 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
+import { CLAIMS } from "@/data/claims";
+import { ClaimsInbox } from "@/components/ClaimsInbox";
+import { ClaimDetail } from "@/components/ClaimDetail";
+import { SimilarClaimsRail } from "@/components/SimilarClaimsRail";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Your App" },
-      { name: "description", content: "Replace this with a one-sentence description of your app." },
-      { property: "og:title", content: "Your App" },
-      { property: "og:description", content: "Replace this with a one-sentence description of your app." },
+      { title: "Claims Agent Inbox" },
+      {
+        name: "description",
+        content:
+          "AI-assisted car insurance claims review console — triage damage photos, AI repair estimates, and similar historical claims.",
+      },
+      { property: "og:title", content: "Claims Agent Inbox" },
+      {
+        property: "og:description",
+        content:
+          "AI-assisted car insurance claims review console — triage damage photos, AI repair estimates, and similar historical claims.",
+      },
     ],
   }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
+  const [selectedId, setSelectedId] = useState(CLAIMS[0].id);
+  const [railOpen, setRailOpen] = useState(true);
+  const selected = CLAIMS.find((c) => c.id === selectedId) ?? CLAIMS[0];
+
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <div className="flex h-screen w-full bg-background font-sans text-sm text-foreground overflow-hidden">
+      <ClaimsInbox claims={CLAIMS} selectedId={selectedId} onSelect={setSelectedId} />
+      <ClaimDetail claim={selected} railOpen={railOpen} onOpenRail={() => setRailOpen(true)} />
+      {railOpen && (
+        <SimilarClaimsRail similar={selected.similar} onClose={() => setRailOpen(false)} />
+      )}
     </div>
   );
 }
