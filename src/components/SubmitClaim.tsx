@@ -84,7 +84,7 @@ export function SubmitClaim({ onSubmit }: Props) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!policyholder) {
-      toast.error("Unknown User ID. Try 100-55-880 for the demo.");
+      toast.error("Unknown User ID.");
       return;
     }
     if (!accidentType || !damageType || !severity || !damageLocation.trim()) {
