@@ -155,13 +155,9 @@ export function SubmitClaim({ onSubmit }: Props) {
                 id="userId"
                 value={userId}
                 onChange={(e) => setUserId(e.target.value)}
-                placeholder="e.g. 100-55-880"
+                placeholder="Enter your User ID"
                 className="font-mono"
               />
-              <p className="text-[11px] text-muted-foreground mt-1.5">
-                For the demo, use <span className="font-mono text-foreground">100-55-880</span>{" "}
-                (Sarah Bennett / 2021 Honda Accord).
-              </p>
             </div>
 
             {userId.trim() && !policyholder && (
