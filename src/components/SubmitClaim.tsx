@@ -84,7 +84,7 @@ export function SubmitClaim({ onSubmit }: Props) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!policyholder) {
-      toast.error("Unknown User ID. Try 100-55-880 for the demo.");
+      toast.error("Unknown User ID.");
       return;
     }
     if (!accidentType || !damageType || !severity || !damageLocation.trim()) {
@@ -155,13 +155,9 @@ export function SubmitClaim({ onSubmit }: Props) {
                 id="userId"
                 value={userId}
                 onChange={(e) => setUserId(e.target.value)}
-                placeholder="e.g. 100-55-880"
+                placeholder="Enter your User ID"
                 className="font-mono"
               />
-              <p className="text-[11px] text-muted-foreground mt-1.5">
-                For the demo, use <span className="font-mono text-foreground">100-55-880</span>{" "}
-                (Sarah Bennett / 2021 Honda Accord).
-              </p>
             </div>
 
             {userId.trim() && !policyholder && (
