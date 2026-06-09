@@ -357,3 +357,111 @@ export const CLAIMS: Claim[] = [
     similar: [],
   },
 ];
+
+// Registry of known policyholders for the "Submit a Claim" lookup.
+// Entering a User ID in the form auto-fills name, policy #, and vehicle.
+export type PolicyholderRecord = {
+  userId: string;
+  name: string;
+  policyNumber: string;
+  coverage: string;
+  vehicle: { make: string; model: string; year: number; vin: string };
+};
+
+export const POLICYHOLDERS: Record<string, PolicyholderRecord> = {
+  "100-55-880": {
+    userId: "100-55-880",
+    name: "Sarah Bennett",
+    policyNumber: "P-10055088",
+    coverage: "Premium Comprehensive",
+    vehicle: { make: "Honda", model: "Accord", year: 2021, vin: "1HGCV1F30MA0XXXXX" },
+  },
+  "992-00-112": {
+    userId: "992-00-112",
+    name: "Marcus Vance",
+    policyNumber: "P-99120034",
+    coverage: "Premium Comprehensive",
+    vehicle: { make: "Tesla", model: "Model 3", year: 2022, vin: "5YJ3E1EA6NF40XXXX" },
+  },
+  "881-44-201": {
+    userId: "881-44-201",
+    name: "Elena Rossi",
+    policyNumber: "P-88410029",
+    coverage: "Comprehensive + Vandalism",
+    vehicle: { make: "Fiat", model: "Cinquecento", year: 1995, vin: "ZFA17000000XXXXXX" },
+  },
+  "871-22-918": {
+    userId: "871-22-918",
+    name: "Julian Chen",
+    policyNumber: "P-87120118",
+    coverage: "Standard Comprehensive",
+    vehicle: { make: "Audi", model: "RS5", year: 2022, vin: "WUAPWAF55NA0XXXXX" },
+  },
+  "865-77-303": {
+    userId: "865-77-303",
+    name: "Priya Sharma",
+    policyNumber: "P-86540077",
+    coverage: "Premium Comprehensive",
+    vehicle: { make: "Mercedes-Benz", model: "GLE 350", year: 2020, vin: "4JGDA5HB1LA0XXXXX" },
+  },
+};
+
+// Default historical comparables shown in the rail for newly-submitted claims.
+export const DEFAULT_SIMILAR: SimilarClaim[] = [
+  {
+    id: "CLM-1205",
+    vehicle: "2020 Toyota 86",
+    finalCost: 1240,
+    matchPct: 84,
+    matchedOn: "Front fender / bumper corner impact pattern",
+    photo: hist1205,
+  },
+  {
+    id: "CLM-0982",
+    vehicle: "1986 Ford LTD",
+    finalCost: 980,
+    matchPct: 71,
+    matchedOn: "Severity classification (Level 1 cosmetic)",
+    photo: hist0982,
+  },
+];
+
+// Generate a plausible AI estimate for a freshly-submitted claim, based on
+// damage severity. Used by the Submit-a-Claim flow so new inbox items show a
+// realistic AI review without hand-authoring each one.
+export function generateEstimateForNewClaim(severity: Severity): Claim["estimate"] {
+  if (severity === "Severe") {
+    return {
+      overallConfidence: 68,
+      summary:
+        "Damage appears significant. Recommend panel replacement, headlamp/taillamp inspection, and full refinish. Structural inspection advised before final approval.",
+      lines: [
+        { id: "l1", action: "Panel Replacement", type: "Replacement", laborHours: 4.5, cost: 1450, confidence: 78 },
+        { id: "l2", action: "Lamp Assembly Replacement", type: "Replacement", laborHours: 1.2, cost: 420, confidence: 74 },
+        { id: "l3", action: "Paint & Refinish", type: "Refinish", laborHours: 5.0, cost: 880, confidence: 66 },
+        { id: "l4", action: "Structural Inspection", type: "Service", laborHours: 1.5, cost: 240, confidence: 55 },
+      ],
+    };
+  }
+  if (severity === "Moderate") {
+    return {
+      overallConfidence: 81,
+      summary:
+        "Moderate cosmetic and minor structural damage. Dent repair, bumper blend, and partial refinish recommended.",
+      lines: [
+        { id: "l1", action: "Dent Repair", type: "Repair", laborHours: 2.5, cost: 520, confidence: 88 },
+        { id: "l2", action: "Bumper Corner Blend", type: "Refinish", laborHours: 2.0, cost: 410, confidence: 79 },
+        { id: "l3", action: "Paint & Refinish (partial)", type: "Refinish", laborHours: 2.5, cost: 380, confidence: 76 },
+      ],
+    };
+  }
+  return {
+    overallConfidence: 90,
+    summary:
+      "Minor cosmetic damage. Paintless dent repair and spot refinish should restore the affected area.",
+    lines: [
+      { id: "l1", action: "Paintless Dent Repair", type: "Repair", laborHours: 1.2, cost: 220, confidence: 93 },
+      { id: "l2", action: "Spot Refinish", type: "Refinish", laborHours: 1.0, cost: 180, confidence: 89 },
+    ],
+  };
+}
