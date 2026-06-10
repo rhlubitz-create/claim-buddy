@@ -1,9 +1,14 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import type { Claim } from "@/data/claims";
-import { AlertTriangle, CheckCircle2, PanelRightOpen, Send } from "lucide-react";
+import { AlertTriangle, CheckCircle2, PanelRightOpen, Send, Info, Check } from "lucide-react";
 import { OverrideDialog } from "./OverrideDialog";
 import { toast } from "sonner";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 function confidencePillStyle(c: number) {
   if (c >= 85) return "bg-success/10 text-success ring-1 ring-success/20";
@@ -15,12 +20,22 @@ type Props = {
   claim: Claim;
   railOpen: boolean;
   onOpenRail: () => void;
+  onDismissFlag?: (claimId: string, flagIndex: number) => void;
 };
 
-export function ClaimDetail({ claim, railOpen, onOpenRail }: Props) {
+export function ClaimDetail({ claim, railOpen, onOpenRail, onDismissFlag }: Props) {
   const [overrideOpen, setOverrideOpen] = useState(false);
 
   const total = claim.estimate.lines.reduce((sum, l) => sum + l.cost, 0);
+  const avgLineConf = Math.round(
+    claim.estimate.lines.reduce((s, l) => s + l.confidence, 0) /
+      Math.max(1, claim.estimate.lines.length),
+  );
+  const avgSimilarMatch = claim.similar.length
+    ? Math.round(
+        claim.similar.reduce((s, x) => s + x.matchPct, 0) / claim.similar.length,
+      )
+    : 0;
 
   return (
     <main className="flex-1 flex flex-col bg-card overflow-hidden relative min-w-0">
@@ -57,10 +72,24 @@ export function ClaimDetail({ claim, railOpen, onOpenRail }: Props) {
                   className="flex items-start gap-3 p-3 rounded-sm bg-destructive/5 border border-destructive/20"
                 >
                   <AlertTriangle className="size-4 text-destructive flex-shrink-0 mt-0.5" />
-                  <div>
+                  <div className="flex-1">
                     <p className="text-sm font-semibold text-destructive">{f.title}</p>
                     <p className="text-xs text-foreground/80 mt-0.5">{f.detail}</p>
                   </div>
+                  {onDismissFlag && (
+                    <button
+                      onClick={() => {
+                        onDismissFlag(claim.id, i);
+                        toast.success("Flag marked as reviewed", {
+                          description: f.title,
+                        });
+                      }}
+                      className="flex-shrink-0 text-[11px] flex items-center gap-1 px-2 py-1 rounded border border-destructive/30 text-destructive hover:bg-destructive/10 transition-colors"
+                    >
+                      <Check className="size-3" />
+                      Mark reviewed
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
@@ -115,12 +144,76 @@ export function ClaimDetail({ claim, railOpen, onOpenRail }: Props) {
             <h2 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
               AI Generated Estimate
             </h2>
-            <p className="text-sm">
-              <span className="text-muted-foreground">Estimated Total: </span>
-              <span className="text-lg font-mono font-bold text-primary">
-                ${total.toLocaleString()}
-              </span>
-            </p>
+            <div className="flex items-center gap-4">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    className={cn(
+                      "text-xs flex items-center gap-1.5 px-2 py-1 rounded ring-1 transition-colors",
+                      confidencePillStyle(claim.estimate.overallConfidence),
+                    )}
+                    title="How is this confidence calculated?"
+                  >
+                    <Info className="size-3" />
+                    Confidence: {claim.estimate.overallConfidence}%
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent align="end" className="w-96 text-xs space-y-3">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+                      How this score is calculated
+                    </p>
+                    <p className="text-foreground/90 leading-relaxed">
+                      The overall confidence blends three weighted signals into a single 0–100 score.
+                    </p>
+                  </div>
+                  <ul className="space-y-2">
+                    <li className="flex justify-between gap-3">
+                      <span className="text-foreground/90">
+                        <span className="font-semibold">Photo / damage match</span>
+                        <span className="block text-muted-foreground text-[11px]">
+                          Computer-vision match between the uploaded photo and reported damage location & type.
+                        </span>
+                      </span>
+                      <span className="font-mono text-muted-foreground whitespace-nowrap">40%</span>
+                    </li>
+                    <li className="flex justify-between gap-3">
+                      <span className="text-foreground/90">
+                        <span className="font-semibold">Line-item confidence (avg {avgLineConf}%)</span>
+                        <span className="block text-muted-foreground text-[11px]">
+                          Average of per-line repair-action confidence from the estimator.
+                        </span>
+                      </span>
+                      <span className="font-mono text-muted-foreground whitespace-nowrap">35%</span>
+                    </li>
+                    <li className="flex justify-between gap-3">
+                      <span className="text-foreground/90">
+                        <span className="font-semibold">
+                          Historical claim match{claim.similar.length
+                            ? ` (avg ${avgSimilarMatch}%)`
+                            : " — none"}
+                        </span>
+                        <span className="block text-muted-foreground text-[11px]">
+                          {claim.similar.length
+                            ? `Compared against ${claim.similar.length} prior claim${claim.similar.length > 1 ? "s" : ""} with similar vehicle, damage location and severity. Final costs of those claims anchor this estimate's expected range.`
+                            : "No comparable historical claims found — score is reduced accordingly."}
+                        </span>
+                      </span>
+                      <span className="font-mono text-muted-foreground whitespace-nowrap">25%</span>
+                    </li>
+                  </ul>
+                  <p className="text-[11px] text-muted-foreground italic border-t border-border pt-2">
+                    Open the <span className="font-semibold">Similar Historical Claims</span> panel to inspect each comparable.
+                  </p>
+                </PopoverContent>
+              </Popover>
+              <p className="text-sm">
+                <span className="text-muted-foreground">Estimated Total: </span>
+                <span className="text-lg font-mono font-bold text-primary">
+                  ${total.toLocaleString()}
+                </span>
+              </p>
+            </div>
           </div>
 
           <p className="text-xs text-foreground/80 italic leading-relaxed">
@@ -176,37 +269,25 @@ export function ClaimDetail({ claim, railOpen, onOpenRail }: Props) {
       </div>
 
       {/* Action Bar */}
-      <div className="px-4 h-16 border-t border-border bg-card flex justify-between items-center flex-shrink-0">
+      <div className="px-4 h-16 border-t border-border bg-card flex justify-end items-center gap-2 flex-shrink-0">
         <button
           onClick={() => setOverrideOpen(true)}
           className="px-4 py-2 text-sm border border-border rounded-sm hover:bg-secondary transition-colors text-foreground/80"
         >
           Override Estimate
         </button>
-        <div className="flex gap-2">
-          <button
-            onClick={() =>
-              toast.info(`Report sent for ${claim.id}`, {
-                description: "AI estimate + confidence scores routed to senior claims adjuster.",
-                icon: <Send className="size-4" />,
-              })
-            }
-            className="px-4 py-2 text-sm border border-border rounded-sm hover:bg-secondary transition-colors flex items-center gap-2"
-          >
-            <Send className="size-3.5" />
-            Send for Final Review
-          </button>
-          <button
-            onClick={() =>
-              toast.success(`Estimate accepted for ${claim.id}`, {
-                description: `Total: $${total.toLocaleString()}. Sent to policyholder.`,
-              })
-            }
-            className="px-6 py-2 text-sm font-semibold bg-primary text-primary-foreground rounded-sm hover:brightness-110 transition-all"
-          >
-            Accept Estimate
-          </button>
-        </div>
+        <button
+          onClick={() =>
+            toast.success(`Estimate accepted for ${claim.id}`, {
+              description: `Total: $${total.toLocaleString()}. Sent for final review.`,
+              icon: <Send className="size-4" />,
+            })
+          }
+          className="px-6 py-2 text-sm font-semibold bg-primary text-primary-foreground rounded-sm hover:brightness-110 transition-all flex items-center gap-2"
+        >
+          <Send className="size-3.5" />
+          Accept / Send for Review
+        </button>
       </div>
 
       <OverrideDialog

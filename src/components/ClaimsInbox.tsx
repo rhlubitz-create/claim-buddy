@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import type { Claim, Severity } from "@/data/claims";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Trash2 } from "lucide-react";
 
 const severityStyles: Record<Severity, string> = {
   Severe: "bg-destructive/10 text-destructive ring-1 ring-destructive/20",
@@ -12,9 +12,13 @@ type Props = {
   claims: Claim[];
   selectedId: string;
   onSelect: (id: string) => void;
+  onDelete?: (id: string) => void;
 };
 
-export function ClaimsInbox({ claims, selectedId, onSelect }: Props) {
+export function ClaimsInbox({ claims, selectedId, onSelect, onDelete }: Props) {
+  const sorted = [...claims].sort(
+    (a, b) => new Date(b.filedAt).getTime() - new Date(a.filedAt).getTime(),
+  );
   return (
     <aside className="w-80 flex-shrink-0 border-r border-border bg-card flex flex-col">
       <header className="px-4 h-14 border-b border-border flex justify-between items-center">
@@ -27,20 +31,26 @@ export function ClaimsInbox({ claims, selectedId, onSelect }: Props) {
         <div className="size-2 rounded-full bg-primary animate-pulse" />
       </header>
       <div className="flex-1 overflow-y-auto">
-        {claims.map((claim) => {
+        {sorted.map((claim) => {
           const isSelected = claim.id === selectedId;
           const hasFlags = claim.flags.length > 0;
+          const submitted = new Date(claim.filedAt);
+          const submittedStr = `${String(submitted.getMonth() + 1).padStart(2, "0")}/${String(submitted.getDate()).padStart(2, "0")}/${submitted.getFullYear()}`;
+          const canDelete = onDelete && claim.policyholder.userId === "100-55-880";
           return (
-            <button
+            <div
               key={claim.id}
-              onClick={() => onSelect(claim.id)}
               className={cn(
-                "w-full text-left p-4 border-b border-border transition-colors block",
+                "w-full text-left border-b border-border transition-colors relative group",
                 isSelected
                   ? "bg-primary/5 border-l-2 border-l-primary"
                   : "hover:bg-secondary/60 border-l-2 border-l-transparent",
               )}
             >
+              <button
+                onClick={() => onSelect(claim.id)}
+                className="w-full text-left p-4 block"
+              >
               <div className="flex justify-between items-start mb-1 gap-2">
                 <span className="font-medium text-sm text-foreground truncate">
                   {claim.policyholder.name}
@@ -54,8 +64,11 @@ export function ClaimsInbox({ claims, selectedId, onSelect }: Props) {
                   {claim.accident.severity}
                 </span>
               </div>
-              <div className="text-muted-foreground text-xs mb-2 truncate">
+              <div className="text-muted-foreground text-xs truncate">
                 {claim.vehicle.year} {claim.vehicle.make} {claim.vehicle.model} · #{claim.id}
+              </div>
+              <div className="text-[11px] text-muted-foreground/80 mb-2">
+                Submitted: <span className="font-mono">{submittedStr}</span>
               </div>
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-[10px] font-mono bg-secondary border border-border px-1.5 py-0.5 rounded text-muted-foreground">
@@ -68,7 +81,21 @@ export function ClaimsInbox({ claims, selectedId, onSelect }: Props) {
                   </span>
                 )}
               </div>
-            </button>
+              </button>
+              {canDelete && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete?.(claim.id);
+                  }}
+                  className="absolute top-2 right-2 size-6 grid place-items-center rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                  aria-label={`Delete ${claim.id}`}
+                  title="Delete demo claim"
+                >
+                  <Trash2 className="size-3.5" />
+                </button>
+              )}
+            </div>
           );
         })}
       </div>
