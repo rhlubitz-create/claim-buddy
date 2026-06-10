@@ -51,7 +51,7 @@ function Index() {
           Submit a Claim
         </TabBtn>
         <TabBtn active={tab === "inbox"} onClick={() => setTab("inbox")} icon={<Inbox className="size-3.5" />}>
-          Agent Inbox
+          Agent Inbox{"\n"}
           <span className="ml-1.5 text-[10px] font-mono bg-secondary px-1.5 py-0.5 rounded">
             {claims.length}
           </span>

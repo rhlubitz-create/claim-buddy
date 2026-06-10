@@ -133,12 +133,11 @@ export function SubmitClaim({ onSubmit }: Props) {
       <div className="max-w-3xl mx-auto px-6 py-10">
         <header className="mb-8">
           <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
-            Policyholder Portal
+            {"\n"}
           </p>
           <h1 className="text-2xl font-semibold tracking-tight">Submit a Claim</h1>
           <p className="text-sm text-muted-foreground mt-2">
-            Report your accident and upload a photo of the damage. Your claim is routed to a
-            claims agent for AI-assisted review.
+            Report an accident and upload a photo of the damage. Your claim will be routed to a Claims Agent for review.
           </p>
         </header>
 
