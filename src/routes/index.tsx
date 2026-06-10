@@ -41,6 +41,24 @@ function Index() {
     setTab("inbox");
   };
 
+  const handleDelete = (id: string) => {
+    setClaims((prev) => {
+      const next = prev.filter((c) => c.id !== id);
+      if (id === selectedId && next.length) setSelectedId(next[0].id);
+      return next;
+    });
+  };
+
+  const handleDismissFlag = (claimId: string, flagIndex: number) => {
+    setClaims((prev) =>
+      prev.map((c) =>
+        c.id === claimId
+          ? { ...c, flags: c.flags.filter((_, i) => i !== flagIndex) }
+          : c,
+      ),
+    );
+  };
+
   return (
     <div className="flex flex-col h-screen w-full bg-background font-sans text-sm text-foreground overflow-hidden">
       <nav className="h-12 border-b border-border bg-card flex items-center px-4 gap-1 flex-shrink-0">
@@ -62,8 +80,18 @@ function Index() {
         <SubmitClaim onSubmit={handleSubmit} />
       ) : (
         <div className="flex flex-1 overflow-hidden">
-          <ClaimsInbox claims={claims} selectedId={selectedId} onSelect={setSelectedId} />
-          <ClaimDetail claim={selected} railOpen={railOpen} onOpenRail={() => setRailOpen(true)} />
+          <ClaimsInbox
+            claims={claims}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+            onDelete={handleDelete}
+          />
+          <ClaimDetail
+            claim={selected}
+            railOpen={railOpen}
+            onOpenRail={() => setRailOpen(true)}
+            onDismissFlag={handleDismissFlag}
+          />
           {railOpen && (
             <SimilarClaimsRail similar={selected.similar} onClose={() => setRailOpen(false)} />
           )}
