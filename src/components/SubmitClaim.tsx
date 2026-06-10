@@ -125,13 +125,22 @@ export function SubmitClaim({ onSubmit }: Props) {
     toast.success(`Claim ${id} submitted`, {
       description: "Routed to the Claims Agent Inbox for AI review.",
     });
-    reset();
+    // Clear the form WITHOUT revoking the blob URL — the inbox needs it to
+    // render the uploaded photo.
+    setUserId("");
+    setAccidentType("");
+    setDescription("");
+    setDamageLocation("");
+    setDamageType("");
+    setSeverity("");
+    setPhotoFile(null);
+    setPhotoUrl(null);
   };
 
   return (
-    <main className="flex-1 overflow-y-auto bg-card">
+    <main className="flex-1 overflow-y-auto bg-background">
       <div className="max-w-3xl mx-auto px-6 py-10">
-        <header className="mb-8">
+        <header className="mb-6">
           <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
             {"\n"}
           </p>
@@ -141,7 +150,10 @@ export function SubmitClaim({ onSubmit }: Props) {
           </p>
         </header>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-8 rounded-md border border-primary/20 bg-primary/5 p-6 shadow-sm"
+        >
           <section className="space-y-3">
             <h2 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
               Policyholder
@@ -154,7 +166,7 @@ export function SubmitClaim({ onSubmit }: Props) {
                 id="userId"
                 value={userId}
                 onChange={(e) => setUserId(e.target.value)}
-                placeholder="Enter your User ID"
+                placeholder="e.g. 000-00-000"
                 className="font-mono"
               />
             </div>
