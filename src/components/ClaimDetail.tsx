@@ -74,15 +74,18 @@ export function ClaimDetail({
           <h1 className="text-base font-semibold tracking-tight">Claim Review</h1>
           <span className="text-xs font-mono text-muted-foreground">#{claim.id}</span>
         </div>
-        {!railOpen && (
-          <button
-            onClick={onOpenRail}
-            className="text-xs flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded hover:bg-secondary"
-          >
-            <PanelRightOpen className="size-3.5" />
-            Show similar claims
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          <AuditLogPopover entries={claim.auditLog ?? []} />
+          {!railOpen && (
+            <button
+              onClick={onOpenRail}
+              className="text-xs flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded hover:bg-secondary"
+            >
+              <PanelRightOpen className="size-3.5" />
+              Show similar claims
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
@@ -254,9 +257,7 @@ export function ClaimDetail({
                               className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-warning/15 text-warning-foreground ring-1 ring-warning/30 hover:brightness-95 transition"
                               title="View override audit trail"
                             >
-                              <span className="text-[9px] font-bold uppercase tracking-wider">
-                                Edited
-                              </span>
+                              <PencilLine className="size-2.5" />
                               ${lineTotal(line).toLocaleString()}
                             </button>
                           </PopoverTrigger>
@@ -411,8 +412,6 @@ export function ClaimDetail({
           </div>
         </section>
 
-        {/* Section 3: Audit Log */}
-        <AuditLogSection entries={claim.auditLog ?? []} />
       </div>
 
       <OverrideDialog
@@ -473,48 +472,43 @@ function EditedValueCell({
   );
 }
 
-function AuditLogSection({ entries }: { entries: AuditEntry[] }) {
-  const [open, setOpen] = useState(true);
+function AuditLogPopover({ entries }: { entries: AuditEntry[] }) {
   const sorted = [...entries].sort(
     (a, b) => new Date(b.at).getTime() - new Date(a.at).getTime(),
   );
   return (
-    <section className="rounded-md border border-border bg-secondary/30">
-      <Collapsible open={open} onOpenChange={setOpen}>
-        <CollapsibleTrigger className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-secondary/60 transition-colors rounded-md">
-          <div className="flex items-center gap-2">
-            <History className="size-4 text-muted-foreground" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              Audit Log
-            </span>
-            <span className="text-[10px] font-mono bg-background px-1.5 py-0.5 rounded border border-border text-muted-foreground">
-              {sorted.length}
-            </span>
-          </div>
-          <ChevronDown
-            className={cn(
-              "size-4 text-muted-foreground transition-transform",
-              open && "rotate-180",
-            )}
-          />
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <div className="border-t border-border">
-            {sorted.length === 0 ? (
-              <p className="px-4 py-6 text-xs text-muted-foreground text-center">
-                No activity yet.
-              </p>
-            ) : (
-              <ol className="divide-y divide-border/60">
-                {sorted.map((e, i) => (
-                  <AuditRow key={i} entry={e} />
-                ))}
-              </ol>
-            )}
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
-    </section>
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          className="text-xs flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded hover:bg-secondary"
+          title="View audit log"
+        >
+          <History className="size-3.5" />
+          Audit Log
+          <span className="text-[10px] font-mono bg-background px-1 py-0.5 rounded border border-border">
+            {sorted.length}
+          </span>
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-[28rem] max-h-[28rem] overflow-y-auto p-0">
+        <div className="px-4 py-3 border-b border-border">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            Claim Audit Log
+          </p>
+        </div>
+        {sorted.length === 0 ? (
+          <p className="px-4 py-6 text-xs text-muted-foreground text-center">
+            No activity yet.
+          </p>
+        ) : (
+          <ol className="divide-y divide-border/60">
+            {sorted.map((e, i) => (
+              <AuditRow key={i} entry={e} />
+            ))}
+          </ol>
+        )}
+      </PopoverContent>
+    </Popover>
   );
 }
 
