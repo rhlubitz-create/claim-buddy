@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { CLAIMS, type Claim, type EstimateLine } from "@/data/claims";
+import { CLAIMS, type Claim, type EstimateLine, type AuditEntry } from "@/data/claims";
 import { ClaimsInbox } from "@/components/ClaimsInbox";
 import { ClaimDetail } from "@/components/ClaimDetail";
 import { SimilarClaimsRail } from "@/components/SimilarClaimsRail";
@@ -30,17 +30,57 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const [tab, setTab] = useState<"submit" | "inbox">("submit");
-  const [claims, setClaims] = useState<Claim[]>(CLAIMS);
+  const [claims, setClaims] = useState<Claim[]>(() =>
+    CLAIMS.map((c) => ({
+      ...c,
+      auditLog: c.auditLog ?? [
+        {
+          at: c.filedAt,
+          actor: c.policyholder.name,
+          kind: "claim_filed",
+          summary: "Claim submitted by policyholder",
+          detail: `${c.accident.type} — ${c.accident.severity} severity`,
+        },
+        {
+          at: new Date(new Date(c.filedAt).getTime() + 90 * 1000).toISOString(),
+          actor: "AI Assistant",
+          kind: "ai_estimate_generated",
+          summary: `AI estimate generated (${c.estimate.overallConfidence}% confidence)`,
+          detail: `${c.estimate.lines.length} line items proposed`,
+        },
+      ],
+    })),
+  );
   const [selectedId, setSelectedId] = useState(CLAIMS[0].id);
   const [railOpen, setRailOpen] = useState(true);
   const selected = claims.find((c) => c.id === selectedId) ?? claims[0];
 
   const handleSubmit = (claim: Claim) => {
-    setClaims((prev) => [claim, ...prev]);
+    const now = new Date().toISOString();
+    const seeded: Claim = {
+      ...claim,
+      auditLog: [
+        {
+          at: claim.filedAt,
+          actor: claim.policyholder.name,
+          kind: "claim_filed",
+          summary: "Claim submitted by policyholder",
+          detail: `${claim.accident.type} — ${claim.accident.severity} severity`,
+        },
+        {
+          at: now,
+          actor: "AI Assistant",
+          kind: "ai_estimate_generated",
+          summary: `AI estimate generated (${claim.estimate.overallConfidence}% confidence)`,
+          detail: `${claim.estimate.lines.length} line items proposed`,
+        },
+      ],
+    };
+    setClaims((prev) => [seeded, ...prev]);
     // Do NOT auto-navigate — the user moves to the Agent Inbox themselves
     // for the demo. Just make sure the new claim is pre-selected when they
     // do switch tabs.
-    setSelectedId(claim.id);
+    setSelectedId(seeded.id);
   };
 
   const handleDelete = (id: string) => {
@@ -53,11 +93,22 @@ function Index() {
 
   const handleDismissFlag = (claimId: string, flagIndex: number) => {
     setClaims((prev) =>
-      prev.map((c) =>
-        c.id === claimId
-          ? { ...c, flags: c.flags.filter((_, i) => i !== flagIndex) }
-          : c,
-      ),
+      prev.map((c) => {
+        if (c.id !== claimId) return c;
+        const flag = c.flags[flagIndex];
+        const entry: AuditEntry = {
+          at: new Date().toISOString(),
+          actor: "Alex Park (Claims Agent)",
+          kind: "flag_reviewed",
+          summary: `Flag marked as reviewed: ${flag?.title ?? "Unknown"}`,
+          detail: flag?.detail,
+        };
+        return {
+          ...c,
+          flags: c.flags.filter((_, i) => i !== flagIndex),
+          auditLog: [...(c.auditLog ?? []), entry],
+        };
+      }),
     );
   };
 
@@ -74,11 +125,38 @@ function Index() {
     updatedLines: EstimateLine[],
   ) => {
     setClaims((prev) =>
-      prev.map((c) =>
-        c.id === id
-          ? { ...c, estimate: { ...c.estimate, lines: updatedLines } }
-          : c,
-      ),
+      prev.map((c) => {
+        if (c.id !== id) return c;
+        // Find lines whose override metadata changed in this save.
+        const changed = updatedLines.filter((nl) => {
+          const prevLine = c.estimate.lines.find((p) => p.id === nl.id);
+          return (
+            nl.overridden &&
+            (!prevLine ||
+              prevLine.laborCost !== nl.laborCost ||
+              prevLine.partsCost !== nl.partsCost)
+          );
+        });
+        const rationale = changed[0]?.override?.rationale;
+        const actor = changed[0]?.override?.by ?? "Claims Agent";
+        const at = changed[0]?.override?.at ?? new Date().toISOString();
+        const entry: AuditEntry | null = changed.length
+          ? {
+              at,
+              actor,
+              kind: "override_saved",
+              summary: `Override saved on ${changed.length} line item${changed.length === 1 ? "" : "s"}`,
+              detail: rationale
+                ? `Rationale: "${rationale}"`
+                : changed.map((l) => l.action).join(", "),
+            }
+          : null;
+        return {
+          ...c,
+          estimate: { ...c.estimate, lines: updatedLines },
+          auditLog: entry ? [...(c.auditLog ?? []), entry] : c.auditLog,
+        };
+      }),
     );
   };
 
