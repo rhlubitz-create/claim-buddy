@@ -309,13 +309,21 @@ export function ClaimDetail({
                               <p className="text-foreground/90 font-medium">{line.action}</p>
                             </div>
                             <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5">
-                              <dt className="text-muted-foreground">Original labor</dt>
+                              <dt className="text-muted-foreground">Original hours</dt>
                               <dd className="font-mono line-through text-muted-foreground">
-                                ${line.override.previousLaborCost.toLocaleString()}
+                                {line.override.previousLaborHours}h
                               </dd>
-                              <dt className="text-muted-foreground">New labor</dt>
+                              <dt className="text-muted-foreground">New hours</dt>
+                              <dd className="font-mono font-semibold">{line.laborHours}h</dd>
+                              <dt className="text-muted-foreground">Original rate</dt>
+                              <dd className="font-mono line-through text-muted-foreground">
+                                ${line.override.previousLaborRate}/h
+                              </dd>
+                              <dt className="text-muted-foreground">New rate</dt>
+                              <dd className="font-mono font-semibold">${line.laborRate}/h</dd>
+                              <dt className="text-muted-foreground">Labor cost (calc)</dt>
                               <dd className="font-mono font-semibold">
-                                ${line.laborCost.toLocaleString()}
+                                ${laborCostOf(line).toLocaleString()}
                               </dd>
                               <dt className="text-muted-foreground">Original parts</dt>
                               <dd className="font-mono line-through text-muted-foreground">
@@ -355,6 +363,8 @@ export function ClaimDetail({
                   >
                     Estimated Total
                   </td>
+                  <td className="py-3 px-4" />
+                  <td className="py-3 px-4" />
                   <td className="py-3 px-4 text-right font-mono text-xs text-muted-foreground">
                     ${laborTotal.toLocaleString()}
                   </td>
