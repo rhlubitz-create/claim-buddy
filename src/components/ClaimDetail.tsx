@@ -143,7 +143,7 @@ export function ClaimDetail({
         {/* Section 2: AI Estimate */}
         <section className="space-y-3">
           <h2 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-            AI Generated Estimate
+            AI Generated Damage Assessment and Cost Estimates
           </h2>
 
           <p className="text-xs text-foreground/80 italic leading-relaxed">
