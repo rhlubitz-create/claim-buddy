@@ -99,6 +99,11 @@ function Index() {
         </TabBtn>
       </nav>
 
+      <div className="px-4 py-2.5 bg-primary/10 border-b border-primary/20 flex items-center gap-2 text-sm font-medium text-primary">
+        <span className="size-2 rounded-full bg-primary animate-pulse" />
+        Welcome, Alex Park
+      </div>
+
       {tab === "submit" ? (
         <SubmitClaim onSubmit={handleSubmit} />
       ) : (
