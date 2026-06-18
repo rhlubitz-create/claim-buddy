@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import type { Claim, Severity } from "@/data/claims";
+import { getConfidenceBreakdown } from "@/data/claims";
 import { AlertTriangle, Trash2 } from "lucide-react";
 
 const severityStyles: Record<Severity, string> = {
@@ -44,6 +45,7 @@ export function ClaimsInbox({ claims, selectedId, onSelect, onDelete }: Props) {
         {sorted.map((claim) => {
           const isSelected = claim.id === selectedId;
           const hasFlags = claim.flags.length > 0;
+          const overallConfidence = getConfidenceBreakdown(claim).overall;
           const submitted = new Date(claim.filedAt);
           const submittedStr = `${String(submitted.getMonth() + 1).padStart(2, "0")}/${String(submitted.getDate()).padStart(2, "0")}/${submitted.getFullYear()}`;
           const canDelete = onDelete && claim.policyholder.userId === "100-55-880";
@@ -76,10 +78,10 @@ export function ClaimsInbox({ claims, selectedId, onSelect, onDelete }: Props) {
                     <span
                       className={cn(
                         "inline-block px-1.5 py-0.5 rounded-sm text-[10px] font-bold whitespace-nowrap",
-                        confidenceStyles(claim.estimate.overallConfidence),
+                        confidenceStyles(overallConfidence),
                       )}
                     >
-                      {claim.estimate.overallConfidence}% conf.
+                      {overallConfidence}% conf.
                     </span>
                     {hasFlags && (
                       <span className="text-[10px] text-destructive flex items-center gap-1 italic whitespace-nowrap">
