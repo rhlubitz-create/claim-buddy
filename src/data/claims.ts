@@ -466,3 +466,92 @@ export function generateEstimateForNewClaim(severity: Severity): Claim["estimate
     ],
   };
 }
+
+// Four equally-weighted signals (25% each) that the AI confidence pill
+// surfaces. Admins could re-weight these in the future, but for the demo
+// they are equal. Values are derived from each claim's photo / line items
+// / historical comparables so demo numbers stay internally consistent.
+export type ConfidenceMetric = {
+  key: "photoCompleteness" | "damageComplexity" | "lineItemAvg" | "historicalMatch";
+  label: string;
+  weight: number; // 0-1
+  score: number; // 0-100
+  detail: string;
+};
+
+export function getConfidenceBreakdown(claim: Claim): {
+  metrics: ConfidenceMetric[];
+  overall: number;
+} {
+  const lines = claim.estimate.lines;
+  const lineItemAvg = lines.length
+    ? Math.round(lines.reduce((s, l) => s + l.confidence, 0) / lines.length)
+    : 0;
+  const historicalMatch = claim.similar.length
+    ? Math.round(
+        claim.similar.reduce((s, x) => s + x.matchPct, 0) / claim.similar.length,
+      )
+    : 0;
+
+  const hasPhotoMismatch = claim.flags.some(
+    (f) => f.kind === "description" || f.kind === "vehicle",
+  );
+  const hasSeverityFlag = claim.flags.some((f) => f.kind === "severity");
+
+  // Photo completeness: high when photo matches the reported damage; low
+  // when an explicit photo/vehicle mismatch flag was raised.
+  const photoCompleteness = hasPhotoMismatch ? 32 : hasSeverityFlag ? 64 : 84;
+
+  // Damage complexity & scope: simpler damage = higher confidence.
+  const complexityBase =
+    claim.accident.severity === "Severe"
+      ? 62
+      : claim.accident.severity === "Moderate"
+        ? 76
+        : 88;
+  const damageComplexity = Math.max(
+    25,
+    complexityBase - (claim.flags.length ? 10 : 0),
+  );
+
+  const metrics: ConfidenceMetric[] = [
+    {
+      key: "photoCompleteness",
+      label: "Photo completeness",
+      weight: 0.25,
+      score: photoCompleteness,
+      detail:
+        "Coverage, focus and angle of the uploaded photo vs. the reported damage location.",
+    },
+    {
+      key: "damageComplexity",
+      label: "Damage complexity & scope",
+      weight: 0.25,
+      score: damageComplexity,
+      detail:
+        "How well-scoped the damage is — bounded cosmetic damage scores higher than multi-panel or structural cases.",
+    },
+    {
+      key: "lineItemAvg",
+      label: "Line-item confidence",
+      weight: 0.25,
+      score: lineItemAvg,
+      detail: `Average of per-line repair-action confidence across ${lines.length} line item${lines.length === 1 ? "" : "s"}.`,
+    },
+    {
+      key: "historicalMatch",
+      label: "Historical claim match",
+      weight: 0.25,
+      score: historicalMatch,
+      detail: claim.similar.length
+        ? `Average match score against ${claim.similar.length} comparable prior claim${claim.similar.length === 1 ? "" : "s"}.`
+        : "No comparable historical claims found.",
+    },
+  ];
+
+  const overall = Math.round(
+    metrics.reduce((s, m) => s + m.score * m.weight, 0),
+  );
+
+  return { metrics, overall };
+}
