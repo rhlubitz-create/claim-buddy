@@ -11,7 +11,6 @@ import {
   Check,
   Sparkles,
   History,
-  ChevronDown,
   FileText,
   PencilLine,
   Bot,
