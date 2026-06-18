@@ -38,6 +38,19 @@ export function lineTotal(l: EstimateLine): number {
   return (l.laborCost ?? 0) + (l.partsCost ?? 0);
 }
 
+export type AuditEntry = {
+  at: string; // ISO timestamp
+  actor: string;
+  kind:
+    | "claim_filed"
+    | "ai_estimate_generated"
+    | "flag_reviewed"
+    | "override_saved"
+    | "claim_accepted";
+  summary: string;
+  detail?: string;
+};
+
 export type SimilarClaim = {
   id: string;
   vehicle: string;
@@ -73,6 +86,7 @@ export type Claim = {
     summary: string;
   };
   similar: SimilarClaim[];
+  auditLog?: AuditEntry[];
 };
 
 export const CLAIMS: Claim[] = [
