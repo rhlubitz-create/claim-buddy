@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import type { Claim, EstimateLine, ConfidenceMetric } from "@/data/claims";
+import type { Claim, EstimateLine } from "@/data/claims";
 import { getConfidenceBreakdown, lineTotal, laborCostOf } from "@/data/claims";
 import {
   AlertTriangle,
