@@ -23,6 +23,7 @@ export type EstimateLine = {
   laborHours: number;
   cost: number;
   confidence: number; // 0-100
+  overridden?: boolean;
 };
 
 export type SimilarClaim = {
