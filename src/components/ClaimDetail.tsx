@@ -414,8 +414,6 @@ export function ClaimDetail({
           </div>
         </section>
 
-        {/* Section 3: Audit Log */}
-        <AuditLogSection entries={claim.auditLog ?? []} />
       </div>
 
       <OverrideDialog
