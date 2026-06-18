@@ -552,8 +552,11 @@ export function getConfidenceBreakdown(claim: Claim): {
     (f) => f.kind === "description" || f.kind === "vehicle",
   );
   const hasSeverityFlag = claim.flags.some((f) => f.kind === "severity");
+  const hasPending = lines.some((l) =>
+    l.action.toLowerCase().includes("pending"),
+  );
 
-  // Photo completeness: high when photo matches the reported damage; low
+  // Photo & input quality: high when photo matches the reported damage; low
   // when an explicit photo/vehicle mismatch flag was raised.
   const photoCompleteness = hasPhotoMismatch ? 32 : hasSeverityFlag ? 64 : 84;
 
@@ -569,38 +572,65 @@ export function getConfidenceBreakdown(claim: Claim): {
     complexityBase - (claim.flags.length ? 10 : 0),
   );
 
+  // Repair scope completeness: derived from line-item confidence, with a
+  // penalty when the scope contains pending or unconfirmed items.
+  const repairScope = hasPending
+    ? Math.round(lineItemAvg * 0.75)
+    : lineItemAvg;
+
+  // Claim consistency: penalized when any mismatch flag is active.
+  const claimConsistency = claim.flags.length > 0 ? 20 : 85;
+
   const metrics: ConfidenceMetric[] = [
     {
       key: "photoCompleteness",
-      label: "Photo completeness",
-      weight: 0.25,
+      label: "Photo & input quality",
+      weight: 0.30,
       score: photoCompleteness,
-      detail:
-        "Coverage, focus and angle of the uploaded photo vs. the reported damage location.",
+      detail: hasPhotoMismatch
+        ? "Submitted photo does not match claim description or vehicle. Request additional documentation."
+        : hasSeverityFlag
+          ? "Single rear-quarter photo provided. Angle partially obscures taillamp area. Claimant description consistent with photo location."
+          : "Photo coverage, focus and angle align well with reported damage location.",
     },
     {
       key: "damageComplexity",
       label: "Damage complexity & scope",
-      weight: 0.25,
+      weight: 0.20,
       score: damageComplexity,
       detail:
-        "How well-scoped the damage is — bounded cosmetic damage scores higher than multi-panel or structural cases.",
+        claim.accident.severity === "Severe"
+          ? "Multi-area damage (panel + taillamp + paint). Structural damage reported but unconfirmed — expands uncertainty window significantly."
+          : claim.accident.severity === "Moderate"
+            ? "Moderate cosmetic and minor structural damage. Scope is bounded to specific panels."
+            : "Minor cosmetic damage. Well-scoped to a single panel or small area.",
     },
     {
-      key: "lineItemAvg",
-      label: "Line-item confidence",
-      weight: 0.25,
-      score: lineItemAvg,
-      detail: `Average of per-line repair-action confidence across ${lines.length} line item${lines.length === 1 ? "" : "s"}.`,
+      key: "repairScope",
+      label: "Repair scope completeness",
+      weight: 0.20,
+      score: repairScope,
+      detail: hasPending
+        ? `${lines.length} repair actions identified. 1 pending item — model cannot confirm scope is complete until inspection done.`
+        : `${lines.length} repair actions identified. Model can confirm scope is complete for all visible damage.`,
     },
     {
       key: "historicalMatch",
-      label: "Historical claim match",
-      weight: 0.25,
+      label: "Historical match strength",
+      weight: 0.20,
       score: historicalMatch,
       detail: claim.similar.length
-        ? `Average match score against ${claim.similar.length} comparable prior claim${claim.similar.length === 1 ? "" : "s"}.`
+        ? `${claim.similar.length} comparable closed claim${claim.similar.length === 1 ? "" : "s"} matched (${claim.similar.map((s) => `${s.matchPct}%`).join(" and ")}). Strong precedent for ${claim.accident.damageLocation.toLowerCase()} damage on similar vehicles.`
         : "No comparable historical claims found.",
+    },
+    {
+      key: "claimConsistency",
+      label: "Claim consistency",
+      weight: 0.10,
+      score: claimConsistency,
+      detail: claim.flags.length
+        ? `Severity mismatch detected. Reported: ${claim.accident.severity} / ${claim.accident.damageType}. Photo evidence: cosmetic Level 1. Flagged for agent review.`
+        : "Photo, vehicle, and severity classification align. No inconsistencies detected.",
     },
   ];
 
