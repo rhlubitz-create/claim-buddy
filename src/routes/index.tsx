@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { CLAIMS, type Claim, type EstimateLine, type AuditEntry } from "@/data/claims";
+import { getConfidenceBreakdown } from "@/data/claims";
 import { ClaimsInbox } from "@/components/ClaimsInbox";
 import { ClaimDetail } from "@/components/ClaimDetail";
 import { SimilarClaimsRail } from "@/components/SimilarClaimsRail";
@@ -98,18 +99,32 @@ function Index() {
       prev.map((c) => {
         if (c.id !== claimId) return c;
         const flag = c.flags[flagIndex];
+        const before = getConfidenceBreakdown(c).overall;
+        const updated: Claim = {
+          ...c,
+          flags: c.flags.filter((_, i) => i !== flagIndex),
+        };
+        const after = getConfidenceBreakdown(updated).overall;
+        const now = new Date().toISOString();
         const entry: AuditEntry = {
-          at: new Date().toISOString(),
+          at: now,
           actor: "Alex Park (Claims Agent)",
           kind: "flag_reviewed",
           summary: `Flag marked as reviewed: ${flag?.title ?? "Unknown"}`,
           detail: flag?.detail,
         };
-        return {
-          ...c,
-          flags: c.flags.filter((_, i) => i !== flagIndex),
-          auditLog: [...(c.auditLog ?? []), entry],
-        };
+        const log = [...(c.auditLog ?? []), entry];
+        if (after !== before) {
+          const delta = after - before;
+          log.push({
+            at: new Date(new Date(now).getTime() + 1).toISOString(),
+            actor: "AI Assistant",
+            kind: "ai_estimate_generated",
+            summary: `Confidence recalculated: ${before}% → ${after}% (${delta > 0 ? "+" : ""}${delta} pts)`,
+            detail: `Triggered by flag review: "${flag?.title ?? "Unknown"}". Claim consistency signal no longer penalized.`,
+          });
+        }
+        return { ...updated, auditLog: log };
       }),
     );
   };
