@@ -84,41 +84,34 @@ export function OverrideDialog({ open, onOpenChange, lines, claimId, onSave }: P
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Override AI Estimate — {claimId}</DialogTitle>
+          <DialogTitle>Override Estimate — {claimId}</DialogTitle>
           <DialogDescription>
-            Edit labor <strong>hours</strong> (a judgment call about repair complexity — used as
-            training signal) and, if needed, correct the looked-up labor <strong>rate</strong> or
-            the parts estimate. Labor cost is calculated as hours × rate. A rationale is required
-            and all edits are logged for audit.
+            Edit values directly. Labor cost is calculated as hours × rate. A rationale is
+            required and all edits are logged for audit.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-3">
-            <div className="grid grid-cols-[1fr_repeat(6,auto)] gap-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground pb-1 border-b border-border items-end">
-              <span>Line Item</span>
-              <span className="text-right w-20">AI Hours</span>
-              <span className="text-right w-24">Override Hours</span>
-              <span className="text-right w-20">AI Rate</span>
-              <span className="text-right w-24">Override Rate</span>
-              <span className="text-right w-24">AI Parts</span>
-              <span className="text-right w-28">Override Parts</span>
+            <div className="grid grid-cols-[1fr_80px_96px_96px_80px] gap-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground pb-1 border-b border-border items-end">
+              <span>Repair Action</span>
+              <span className="text-right">Hours</span>
+              <span className="text-right">Rate ($/hr)</span>
+              <span className="text-right">Parts</span>
+              <span className="text-right">Total</span>
             </div>
             {lines.map((line) => (
-              <div key={line.id} className="grid grid-cols-[1fr_repeat(6,auto)] gap-3 items-center">
-                <div>
-                  <p className="text-sm font-medium">{line.action}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {line.type} · labor ${laborCostOf(line).toLocaleString()} · {line.confidence}% conf. · total $
-                    {lineTotal(line).toLocaleString()}
-                  </p>
+              <div
+                key={line.id}
+                className="grid grid-cols-[1fr_80px_96px_96px_80px] gap-3 items-start"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{line.action}</p>
+                  <p className="text-[11px] text-muted-foreground">{line.type}</p>
                 </div>
-                <span className="text-sm font-mono text-muted-foreground w-20 text-right">
-                  {line.laborHours}h
-                </span>
-                <div className="relative w-24">
+                <div className="relative">
                   <Input
                     type="number"
                     min="0"
@@ -127,17 +120,14 @@ export function OverrideDialog({ open, onOpenChange, lines, claimId, onSave }: P
                     onChange={(e) =>
                       setHours((prev) => ({ ...prev, [line.id]: e.target.value }))
                     }
-                    className="pr-6 font-mono text-sm h-9 text-right"
+                    className="pr-5 font-mono text-sm h-9 text-right"
                   />
-                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground pointer-events-none">
                     h
                   </span>
                 </div>
-                <span className="text-sm font-mono text-muted-foreground w-20 text-right">
-                  ${line.laborRate}/h
-                </span>
-                <div className="relative w-24">
-                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                <div className="relative">
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
                     $
                   </span>
                   <Input
@@ -148,17 +138,11 @@ export function OverrideDialog({ open, onOpenChange, lines, claimId, onSave }: P
                     onChange={(e) =>
                       setRate((prev) => ({ ...prev, [line.id]: e.target.value }))
                     }
-                    className="pl-5 pr-6 font-mono text-sm h-9"
+                    className="pl-5 pr-5 font-mono text-sm h-9 text-right"
                   />
-                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground pointer-events-none">
-                    /h
-                  </span>
                 </div>
-                <span className="text-sm font-mono text-muted-foreground w-24 text-right">
-                  ${line.partsCost.toLocaleString()}
-                </span>
-                <div className="relative w-28">
-                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                <div className="relative">
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
                     $
                   </span>
                   <Input
@@ -169,8 +153,13 @@ export function OverrideDialog({ open, onOpenChange, lines, claimId, onSave }: P
                     onChange={(e) =>
                       setParts((prev) => ({ ...prev, [line.id]: e.target.value }))
                     }
-                    className="pl-5 font-mono text-sm h-9"
+                    className="pl-5 font-mono text-sm h-9 text-right"
                   />
+                </div>
+                <div className="text-right pt-2">
+                  <span className="text-sm font-mono font-medium">
+                    ${lineNewTotal(line.id).toLocaleString()}
+                  </span>
                 </div>
               </div>
             ))}
