@@ -5,6 +5,7 @@ import { ClaimsInbox } from "@/components/ClaimsInbox";
 import { ClaimDetail } from "@/components/ClaimDetail";
 import { SimilarClaimsRail } from "@/components/SimilarClaimsRail";
 import { SubmitClaim } from "@/components/SubmitClaim";
+import { ConfidenceBreakdown } from "@/components/ConfidenceBreakdown";
 import { cn } from "@/lib/utils";
 import { Inbox, FilePlus2, Car } from "lucide-react";
 
@@ -53,6 +54,7 @@ function Index() {
   );
   const [selectedId, setSelectedId] = useState(CLAIMS[0].id);
   const [railOpen, setRailOpen] = useState(true);
+  const [view, setView] = useState<"detail" | "confidence">("detail");
   const selected = claims.find((c) => c.id === selectedId) ?? claims[0];
 
   const handleSubmit = (claim: Claim) => {
@@ -187,19 +189,35 @@ function Index() {
           <ClaimsInbox
             claims={claims}
             selectedId={selectedId}
-            onSelect={setSelectedId}
+            onSelect={(id) => {
+              setSelectedId(id);
+              setView("detail");
+            }}
             onDelete={handleDelete}
           />
-          <ClaimDetail
-            claim={selected}
-            railOpen={railOpen}
-            onOpenRail={() => setRailOpen(true)}
-            onDismissFlag={handleDismissFlag}
-            onAccept={handleAccept}
-            onSaveOverride={handleSaveOverride}
-          />
-          {railOpen && (
-            <SimilarClaimsRail similar={selected.similar} onClose={() => setRailOpen(false)} />
+          {view === "confidence" ? (
+            <ConfidenceBreakdown
+              claim={selected}
+              onBack={() => setView("detail")}
+            />
+          ) : (
+            <>
+              <ClaimDetail
+                claim={selected}
+                railOpen={railOpen}
+                onOpenRail={() => setRailOpen(true)}
+                onDismissFlag={handleDismissFlag}
+                onAccept={handleAccept}
+                onSaveOverride={handleSaveOverride}
+                onViewConfidence={() => setView("confidence")}
+              />
+              {railOpen && (
+                <SimilarClaimsRail
+                  similar={selected.similar}
+                  onClose={() => setRailOpen(false)}
+                />
+              )}
+            </>
           )}
         </div>
       )}
