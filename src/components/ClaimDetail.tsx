@@ -142,81 +142,9 @@ export function ClaimDetail({
 
         {/* Section 2: AI Estimate */}
         <section className="space-y-3">
-          <div className="flex justify-between items-end">
-            <h2 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              AI Generated Estimate
-            </h2>
-            <div className="flex items-center gap-4">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button
-                    className={cn(
-                      "text-xs flex items-center gap-1.5 px-2 py-1 rounded ring-1 transition-colors",
-                      confidencePillStyle(claim.estimate.overallConfidence),
-                    )}
-                    title="How is this confidence calculated?"
-                  >
-                    <Info className="size-3" />
-                    Confidence: {claim.estimate.overallConfidence}%
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent align="end" className="w-96 text-xs space-y-3">
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
-                      How this score is calculated
-                    </p>
-                    <p className="text-foreground/90 leading-relaxed">
-                      The overall confidence blends three weighted signals into a single 0–100 score.
-                    </p>
-                  </div>
-                  <ul className="space-y-2">
-                    <li className="flex justify-between gap-3">
-                      <span className="text-foreground/90">
-                        <span className="font-semibold">Photo / damage match</span>
-                        <span className="block text-muted-foreground text-[11px]">
-                          Computer-vision match between the uploaded photo and reported damage location & type.
-                        </span>
-                      </span>
-                      <span className="font-mono text-muted-foreground whitespace-nowrap">40%</span>
-                    </li>
-                    <li className="flex justify-between gap-3">
-                      <span className="text-foreground/90">
-                        <span className="font-semibold">Line-item confidence (avg {avgLineConf}%)</span>
-                        <span className="block text-muted-foreground text-[11px]">
-                          Average of per-line repair-action confidence from the estimator.
-                        </span>
-                      </span>
-                      <span className="font-mono text-muted-foreground whitespace-nowrap">35%</span>
-                    </li>
-                    <li className="flex justify-between gap-3">
-                      <span className="text-foreground/90">
-                        <span className="font-semibold">
-                          Historical claim match{claim.similar.length
-                            ? ` (avg ${avgSimilarMatch}%)`
-                            : " — none"}
-                        </span>
-                        <span className="block text-muted-foreground text-[11px]">
-                          {claim.similar.length
-                            ? `Compared against ${claim.similar.length} prior claim${claim.similar.length > 1 ? "s" : ""} with similar vehicle, damage location and severity. Final costs of those claims anchor this estimate's expected range.`
-                            : "No comparable historical claims found — score is reduced accordingly."}
-                        </span>
-                      </span>
-                      <span className="font-mono text-muted-foreground whitespace-nowrap">25%</span>
-                    </li>
-                  </ul>
-                  <p className="text-[11px] text-muted-foreground italic border-t border-border pt-2">
-                    Open the <span className="font-semibold">Similar Historical Claims</span> panel to inspect each comparable.
-                  </p>
-                </PopoverContent>
-              </Popover>
-              <p className="text-sm">
-                <span className="text-muted-foreground">Estimated Total: </span>
-                <span className="text-lg font-mono font-bold text-primary">
-                  ${total.toLocaleString()}
-                </span>
-              </p>
-            </div>
-          </div>
+          <h2 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            AI Generated Estimate
+          </h2>
 
           <p className="text-xs text-foreground/80 italic leading-relaxed">
             {claim.estimate.summary}
@@ -252,15 +180,89 @@ export function ClaimDetail({
                       </span>
                     </td>
                     <td className="py-3 px-4 text-right font-mono font-medium">
-                      ${line.cost.toLocaleString()}
+                      {line.overridden ? (
+                        <span
+                          className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-warning/15 text-warning-foreground ring-1 ring-warning/30"
+                          title="Manually overridden by claims agent"
+                        >
+                          <span className="text-[9px] font-bold uppercase tracking-wider">
+                            Edited
+                          </span>
+                          ${line.cost.toLocaleString()}
+                        </span>
+                      ) : (
+                        <>${line.cost.toLocaleString()}</>
+                      )}
                     </td>
                   </tr>
                 ))}
                 <tr className="bg-background/60">
-                  <td colSpan={4} className="py-3 px-4 text-right text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                    Total Estimated Repair Cost
+                  <td
+                    colSpan={3}
+                    className="py-3 px-4 text-right text-xs font-bold uppercase tracking-widest text-muted-foreground"
+                  >
+                    Estimated Total
                   </td>
-                  <td className="py-3 px-4 text-right font-mono font-bold text-base">
+                  <td className="py-3 px-4 text-center">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button
+                          className={cn(
+                            "inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-semibold ring-1 transition-colors",
+                            confidencePillStyle(overall),
+                          )}
+                          title="How is this confidence calculated?"
+                        >
+                          <Info className="size-3" />
+                          {overall}%
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent align="end" className="w-96 text-xs space-y-3">
+                        <div>
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+                            How this score is calculated
+                          </p>
+                          <p className="text-foreground/90 leading-relaxed">
+                            The overall confidence is a weighted blend of four equally-weighted
+                            signals (25% each). Weights are configurable by an admin.
+                          </p>
+                        </div>
+                        <ul className="space-y-2">
+                          {metrics.map((m) => (
+                            <li key={m.key} className="flex justify-between gap-3">
+                              <span className="text-foreground/90 flex-1">
+                                <span className="flex items-center gap-2">
+                                  <span className="font-semibold">{m.label}</span>
+                                  <span
+                                    className={cn(
+                                      "inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold",
+                                      confidencePillStyle(m.score),
+                                    )}
+                                  >
+                                    {m.score}%
+                                  </span>
+                                </span>
+                                <span className="block text-muted-foreground text-[11px] mt-0.5">
+                                  {m.detail}
+                                </span>
+                              </span>
+                              <span className="font-mono text-muted-foreground whitespace-nowrap">
+                                {Math.round(m.weight * 100)}%
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                        <p className="text-[11px] text-muted-foreground italic border-t border-border pt-2">
+                          Overall ={" "}
+                          {metrics
+                            .map((m) => `${m.score}×${Math.round(m.weight * 100)}%`)
+                            .join(" + ")}{" "}
+                          = <span className="font-semibold">{overall}%</span>
+                        </p>
+                      </PopoverContent>
+                    </Popover>
+                  </td>
+                  <td className="py-3 px-4 text-right font-mono font-bold text-base text-primary">
                     ${total.toLocaleString()}
                   </td>
                 </tr>
@@ -279,12 +281,13 @@ export function ClaimDetail({
           Override Estimate
         </button>
         <button
-          onClick={() =>
+          onClick={() => {
             toast.success(`Estimate accepted for ${claim.id}`, {
               description: `Total: $${total.toLocaleString()}. Sent for final review.`,
               icon: <Send className="size-4" />,
-            })
-          }
+            });
+            onAccept?.(claim.id);
+          }}
           className="px-6 py-2 text-sm font-semibold bg-primary text-primary-foreground rounded-sm hover:brightness-110 transition-all flex items-center gap-2"
         >
           <Send className="size-3.5" />
@@ -297,6 +300,7 @@ export function ClaimDetail({
         onOpenChange={setOverrideOpen}
         lines={claim.estimate.lines}
         claimId={claim.id}
+        onSave={(updated) => onSaveOverride?.(claim.id, updated)}
       />
     </main>
   );
