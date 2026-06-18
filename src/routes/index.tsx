@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { CLAIMS, type Claim } from "@/data/claims";
+import { CLAIMS, type Claim, type EstimateLine } from "@/data/claims";
 import { ClaimsInbox } from "@/components/ClaimsInbox";
 import { ClaimDetail } from "@/components/ClaimDetail";
 import { SimilarClaimsRail } from "@/components/SimilarClaimsRail";
@@ -37,8 +37,10 @@ function Index() {
 
   const handleSubmit = (claim: Claim) => {
     setClaims((prev) => [claim, ...prev]);
+    // Do NOT auto-navigate — the user moves to the Agent Inbox themselves
+    // for the demo. Just make sure the new claim is pre-selected when they
+    // do switch tabs.
     setSelectedId(claim.id);
-    setTab("inbox");
   };
 
   const handleDelete = (id: string) => {
@@ -54,6 +56,27 @@ function Index() {
       prev.map((c) =>
         c.id === claimId
           ? { ...c, flags: c.flags.filter((_, i) => i !== flagIndex) }
+          : c,
+      ),
+    );
+  };
+
+  const handleAccept = (id: string) => {
+    setClaims((prev) => {
+      const next = prev.filter((c) => c.id !== id);
+      if (id === selectedId && next.length) setSelectedId(next[0].id);
+      return next;
+    });
+  };
+
+  const handleSaveOverride = (
+    id: string,
+    updatedLines: EstimateLine[],
+  ) => {
+    setClaims((prev) =>
+      prev.map((c) =>
+        c.id === id
+          ? { ...c, estimate: { ...c.estimate, lines: updatedLines } }
           : c,
       ),
     );
@@ -91,6 +114,8 @@ function Index() {
             railOpen={railOpen}
             onOpenRail={() => setRailOpen(true)}
             onDismissFlag={handleDismissFlag}
+            onAccept={handleAccept}
+            onSaveOverride={handleSaveOverride}
           />
           {railOpen && (
             <SimilarClaimsRail similar={selected.similar} onClose={() => setRailOpen(false)} />
