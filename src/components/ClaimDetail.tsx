@@ -526,27 +526,6 @@ function DonutChart({
   );
 }
 
-function MetricIcon({
-  metricKey,
-  className,
-}: {
-  metricKey: ConfidenceMetric["key"];
-  className?: string;
-}) {
-  switch (metricKey) {
-    case "photoCompleteness":
-      return <Camera className={className} />;
-    case "damageComplexity":
-      return <BarChart3 className={className} />;
-    case "repairScope":
-      return <ClipboardList className={className} />;
-    case "historicalMatch":
-      return <History className={className} />;
-    case "claimConsistency":
-      return <ShieldAlert className={className} />;
-  }
-}
-
 function EditedValueCell({
   edited,
   current,
