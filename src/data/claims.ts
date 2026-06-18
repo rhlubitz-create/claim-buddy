@@ -24,6 +24,12 @@ export type EstimateLine = {
   cost: number;
   confidence: number; // 0-100
   overridden?: boolean;
+  override?: {
+    by: string;
+    rationale: string;
+    at: string; // ISO timestamp
+    previousCost: number;
+  };
 };
 
 export type SimilarClaim = {
