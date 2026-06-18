@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import type { Claim } from "@/data/claims";
+import type { Claim, EstimateLine } from "@/data/claims";
+import { getConfidenceBreakdown } from "@/data/claims";
 import { AlertTriangle, CheckCircle2, PanelRightOpen, Send, Info, Check } from "lucide-react";
 import { OverrideDialog } from "./OverrideDialog";
 import { toast } from "sonner";
@@ -21,21 +22,22 @@ type Props = {
   railOpen: boolean;
   onOpenRail: () => void;
   onDismissFlag?: (claimId: string, flagIndex: number) => void;
+  onAccept?: (claimId: string) => void;
+  onSaveOverride?: (claimId: string, lines: EstimateLine[]) => void;
 };
 
-export function ClaimDetail({ claim, railOpen, onOpenRail, onDismissFlag }: Props) {
+export function ClaimDetail({
+  claim,
+  railOpen,
+  onOpenRail,
+  onDismissFlag,
+  onAccept,
+  onSaveOverride,
+}: Props) {
   const [overrideOpen, setOverrideOpen] = useState(false);
 
   const total = claim.estimate.lines.reduce((sum, l) => sum + l.cost, 0);
-  const avgLineConf = Math.round(
-    claim.estimate.lines.reduce((s, l) => s + l.confidence, 0) /
-      Math.max(1, claim.estimate.lines.length),
-  );
-  const avgSimilarMatch = claim.similar.length
-    ? Math.round(
-        claim.similar.reduce((s, x) => s + x.matchPct, 0) / claim.similar.length,
-      )
-    : 0;
+  const { metrics, overall } = getConfidenceBreakdown(claim);
 
   return (
     <main className="flex-1 flex flex-col bg-card overflow-hidden relative min-w-0">
