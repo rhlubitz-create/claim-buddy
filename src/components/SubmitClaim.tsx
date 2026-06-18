@@ -122,8 +122,8 @@ export function SubmitClaim({ onSubmit }: Props) {
     };
 
     onSubmit(newClaim);
-    toast.success(`Claim ${id} submitted`, {
-      description: "Routed to the Claims Agent Inbox for AI review.",
+    toast.success("Submitted", {
+      description: `Claim ${id} routed to the Agent Inbox.`,
     });
     // Clear the form WITHOUT revoking the blob URL — the inbox needs it to
     // render the uploaded photo.

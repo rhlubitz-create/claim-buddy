@@ -19,9 +19,10 @@ type Props = {
   onOpenChange: (open: boolean) => void;
   lines: EstimateLine[];
   claimId: string;
+  onSave?: (updatedLines: EstimateLine[]) => void;
 };
 
-export function OverrideDialog({ open, onOpenChange, lines, claimId }: Props) {
+export function OverrideDialog({ open, onOpenChange, lines, claimId, onSave }: Props) {
   const [values, setValues] = useState<Record<string, string>>(() =>
     Object.fromEntries(lines.map((l) => [l.id, l.cost.toString()])),
   );
@@ -35,6 +36,16 @@ export function OverrideDialog({ open, onOpenChange, lines, claimId }: Props) {
       toast.error("Rationale is required when overriding an AI estimate.");
       return;
     }
+    const updated: EstimateLine[] = lines.map((l) => {
+      const newCost = parseFloat(values[l.id]) || 0;
+      const changed = newCost !== l.cost;
+      return {
+        ...l,
+        cost: newCost,
+        overridden: l.overridden || changed,
+      };
+    });
+    onSave?.(updated);
     toast.success(`Override saved for ${claimId}`, {
       description: `New total: $${total.toLocaleString()}. Rationale logged for audit.`,
     });
