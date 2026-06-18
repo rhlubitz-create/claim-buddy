@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import type { Claim, EstimateLine } from "@/data/claims";
-import { getConfidenceBreakdown, lineTotal } from "@/data/claims";
+import { getConfidenceBreakdown, lineTotal, laborCostOf } from "@/data/claims";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -62,7 +62,7 @@ export function ClaimDetail({
   const [overrideOpen, setOverrideOpen] = useState(false);
 
   const total = claim.estimate.lines.reduce((sum, l) => sum + lineTotal(l), 0);
-  const laborTotal = claim.estimate.lines.reduce((s, l) => s + l.laborCost, 0);
+  const laborTotal = claim.estimate.lines.reduce((s, l) => s + laborCostOf(l), 0);
   const partsTotal = claim.estimate.lines.reduce((s, l) => s + l.partsCost, 0);
   const { metrics, overall } = getConfidenceBreakdown(claim);
 
@@ -189,6 +189,23 @@ export function ClaimDetail({
                 <tr className="bg-background border-b border-border text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
                   <th className="py-2.5 px-4">Repair Action</th>
                   <th className="py-2.5 px-4">Type</th>
+                  <th className="py-2.5 px-4 text-right">Hours</th>
+                  <th className="py-2.5 px-4 text-right">
+                    <span className="inline-flex items-center gap-1">
+                      Rate
+                      <TooltipProvider delayDuration={150}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="size-3 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-xs">
+                            Pulled from the shop labor rate table by repair type. Editable as a
+                            lookup correction, not an AI estimate.
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </span>
+                  </th>
                   <th className="py-2.5 px-4 text-right">Labor</th>
                   <th className="py-2.5 px-4 text-right">Parts</th>
                   <th className="py-2.5 px-4 text-center">Confidence</th>
@@ -205,18 +222,41 @@ export function ClaimDetail({
                         edited={
                           !!line.overridden &&
                           !!line.override &&
-                          line.override.previousLaborCost !== line.laborCost
+                          line.override.previousLaborHours !== line.laborHours
                         }
-                        current={`$${line.laborCost.toLocaleString()}`}
+                        current={`${line.laborHours}h`}
                         previous={
                           line.override
-                            ? `$${line.override.previousLaborCost.toLocaleString()}`
+                            ? `${line.override.previousLaborHours}h`
                             : undefined
                         }
                         override={line.override}
-                        field="Labor"
+                        field="Labor hours"
                       />
-                      <div className="text-[10px] text-muted-foreground">{line.laborHours}h</div>
+                    </td>
+                    <td className="py-3 px-4 text-right font-mono text-xs">
+                      <EditedValueCell
+                        edited={
+                          !!line.overridden &&
+                          !!line.override &&
+                          line.override.previousLaborRate !== line.laborRate
+                        }
+                        current={`$${line.laborRate}/h`}
+                        previous={
+                          line.override
+                            ? `$${line.override.previousLaborRate}/h`
+                            : undefined
+                        }
+                        override={line.override}
+                        field="Labor rate"
+                      />
+                      <div className="text-[10px] text-muted-foreground">from rate table</div>
+                    </td>
+                    <td className="py-3 px-4 text-right font-mono text-xs text-muted-foreground">
+                      ${laborCostOf(line).toLocaleString()}
+                      <div className="text-[10px] text-muted-foreground/70">
+                        {line.laborHours} × ${line.laborRate}
+                      </div>
                     </td>
                     <td className="py-3 px-4 text-right font-mono text-xs">
                       {line.partsCost > 0 || (line.override && line.override.previousPartsCost > 0) ? (
@@ -269,13 +309,21 @@ export function ClaimDetail({
                               <p className="text-foreground/90 font-medium">{line.action}</p>
                             </div>
                             <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5">
-                              <dt className="text-muted-foreground">Original labor</dt>
+                              <dt className="text-muted-foreground">Original hours</dt>
                               <dd className="font-mono line-through text-muted-foreground">
-                                ${line.override.previousLaborCost.toLocaleString()}
+                                {line.override.previousLaborHours}h
                               </dd>
-                              <dt className="text-muted-foreground">New labor</dt>
+                              <dt className="text-muted-foreground">New hours</dt>
+                              <dd className="font-mono font-semibold">{line.laborHours}h</dd>
+                              <dt className="text-muted-foreground">Original rate</dt>
+                              <dd className="font-mono line-through text-muted-foreground">
+                                ${line.override.previousLaborRate}/h
+                              </dd>
+                              <dt className="text-muted-foreground">New rate</dt>
+                              <dd className="font-mono font-semibold">${line.laborRate}/h</dd>
+                              <dt className="text-muted-foreground">Labor cost (calc)</dt>
                               <dd className="font-mono font-semibold">
-                                ${line.laborCost.toLocaleString()}
+                                ${laborCostOf(line).toLocaleString()}
                               </dd>
                               <dt className="text-muted-foreground">Original parts</dt>
                               <dd className="font-mono line-through text-muted-foreground">
@@ -315,6 +363,8 @@ export function ClaimDetail({
                   >
                     Estimated Total
                   </td>
+                  <td className="py-3 px-4" />
+                  <td className="py-3 px-4" />
                   <td className="py-3 px-4 text-right font-mono text-xs text-muted-foreground">
                     ${laborTotal.toLocaleString()}
                   </td>
