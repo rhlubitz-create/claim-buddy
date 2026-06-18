@@ -6,7 +6,7 @@ import { ClaimDetail } from "@/components/ClaimDetail";
 import { SimilarClaimsRail } from "@/components/SimilarClaimsRail";
 import { SubmitClaim } from "@/components/SubmitClaim";
 import { cn } from "@/lib/utils";
-import { Inbox, FilePlus2 } from "lucide-react";
+import { Inbox, FilePlus2, Car } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -84,10 +84,12 @@ function Index() {
 
   return (
     <div className="flex flex-col h-screen w-full bg-background font-sans text-sm text-foreground overflow-hidden">
-      <nav className="h-12 border-b border-border bg-card flex items-center px-4 gap-1 flex-shrink-0">
-        <span className="font-semibold tracking-tight text-sm mr-4">
-          Claims Console
-        </span>
+      <div className="flex items-center gap-2 px-4 h-12 border-b border-border bg-card flex-shrink-0">
+        <Car className="size-5 text-primary" />
+        <span className="font-bold text-base tracking-tight">Claims Agent</span>
+      </div>
+
+      <nav className="h-10 border-b border-border bg-card/60 flex items-center px-4 gap-1 flex-shrink-0">
         <TabBtn active={tab === "submit"} onClick={() => setTab("submit")} icon={<FilePlus2 className="size-3.5" />}>
           Submit a Claim
         </TabBtn>
@@ -98,14 +100,6 @@ function Index() {
           </span>
         </TabBtn>
       </nav>
-
-      <div className="px-6 py-4 bg-primary/10 border-b border-primary/20 flex items-center gap-3">
-        <span className="size-3 rounded-full bg-primary animate-pulse" />
-        <div className="flex flex-col">
-          <span className="text-xs uppercase tracking-wider text-primary/70 font-semibold">Welcome</span>
-          <span className="text-lg font-bold text-primary">Alex Park</span>
-        </div>
-      </div>
 
       {tab === "submit" ? (
         <SubmitClaim onSubmit={handleSubmit} />
