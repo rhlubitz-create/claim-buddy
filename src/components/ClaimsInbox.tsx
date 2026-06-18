@@ -10,12 +10,12 @@ const severityStyles: Record<Severity, string> = {
 
 function confidenceStyles(score: number): string {
   if (score < 60) {
-    return "bg-destructive/10 text-destructive ring-1 ring-destructive/20";
+    return "bg-destructive/10 text-black ring-1 ring-destructive/20";
   }
   if (score < 80) {
-    return "bg-warning/15 text-warning-foreground ring-1 ring-warning/30";
+    return "bg-warning/15 text-black ring-1 ring-warning/30";
   }
-  return "bg-success/10 text-success-foreground ring-1 ring-success/20";
+  return "bg-success/10 text-black ring-1 ring-success/20";
 }
 
 type Props = {
