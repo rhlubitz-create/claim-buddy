@@ -474,10 +474,10 @@ export function generateEstimateForNewClaim(severity: Severity): Claim["estimate
       summary:
         "Damage appears significant. Recommend panel replacement, headlamp/taillamp inspection, and full refinish. Structural inspection advised before final approval.",
       lines: [
-        { id: "l1", action: "Panel Replacement", type: "Replacement", laborHours: 4.5, laborCost: 500, partsCost: 950, confidence: 78 },
-        { id: "l2", action: "Lamp Assembly Replacement", type: "Replacement", laborHours: 1.2, laborCost: 120, partsCost: 300, confidence: 74 },
-        { id: "l3", action: "Paint & Refinish", type: "Refinish", laborHours: 5.0, laborCost: 600, partsCost: 280, confidence: 66 },
-        { id: "l4", action: "Structural Inspection", type: "Service", laborHours: 1.5, laborCost: 240, partsCost: 0, confidence: 55 },
+        { id: "l1", action: "Panel Replacement", type: "Replacement", laborHours: 4.5, laborRate: 95, partsCost: 950, confidence: 78 },
+        { id: "l2", action: "Lamp Assembly Replacement", type: "Replacement", laborHours: 1.2, laborRate: 95, partsCost: 300, confidence: 74 },
+        { id: "l3", action: "Paint & Refinish", type: "Refinish", laborHours: 5.0, laborRate: 120, partsCost: 280, confidence: 66 },
+        { id: "l4", action: "Structural Inspection", type: "Service", laborHours: 1.5, laborRate: 180, partsCost: 0, confidence: 55 },
       ],
     };
   }
@@ -487,9 +487,9 @@ export function generateEstimateForNewClaim(severity: Severity): Claim["estimate
       summary:
         "Moderate cosmetic and minor structural damage. Dent repair, bumper blend, and partial refinish recommended.",
       lines: [
-        { id: "l1", action: "Dent Repair", type: "Repair", laborHours: 2.5, laborCost: 440, partsCost: 80, confidence: 88 },
-        { id: "l2", action: "Bumper Corner Blend", type: "Refinish", laborHours: 2.0, laborCost: 270, partsCost: 140, confidence: 79 },
-        { id: "l3", action: "Paint & Refinish (partial)", type: "Refinish", laborHours: 2.5, laborCost: 250, partsCost: 130, confidence: 76 },
+        { id: "l1", action: "Dent Repair", type: "Repair", laborHours: 2.5, laborRate: 145, partsCost: 80, confidence: 88 },
+        { id: "l2", action: "Bumper Corner Blend", type: "Refinish", laborHours: 2.0, laborRate: 120, partsCost: 140, confidence: 79 },
+        { id: "l3", action: "Paint & Refinish (partial)", type: "Refinish", laborHours: 2.5, laborRate: 120, partsCost: 130, confidence: 76 },
       ],
     };
   }
@@ -498,8 +498,8 @@ export function generateEstimateForNewClaim(severity: Severity): Claim["estimate
     summary:
       "Minor cosmetic damage. Paintless dent repair and spot refinish should restore the affected area.",
     lines: [
-      { id: "l1", action: "Paintless Dent Repair", type: "Repair", laborHours: 1.2, laborCost: 220, partsCost: 0, confidence: 93 },
-      { id: "l2", action: "Spot Refinish", type: "Refinish", laborHours: 1.0, laborCost: 120, partsCost: 60, confidence: 89 },
+      { id: "l1", action: "Paintless Dent Repair", type: "Repair", laborHours: 1.2, laborRate: 145, partsCost: 0, confidence: 93 },
+      { id: "l2", action: "Spot Refinish", type: "Refinish", laborHours: 1.0, laborRate: 120, partsCost: 60, confidence: 89 },
     ],
   };
 }
