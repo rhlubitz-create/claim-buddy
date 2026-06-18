@@ -21,7 +21,7 @@ export type EstimateLine = {
   action: string;
   type: "Replacement" | "Repair" | "Refinish" | "Service" | "Labor";
   laborHours: number;
-  laborCost: number;
+  laborRate: number; // $/hr — looked up from LABOR_RATES by type, editable as a correction
   partsCost: number;
   confidence: number; // 0-100
   overridden?: boolean;
@@ -29,13 +29,30 @@ export type EstimateLine = {
     by: string;
     rationale: string;
     at: string; // ISO timestamp
-    previousLaborCost: number;
+    previousLaborHours: number;
+    previousLaborRate: number;
     previousPartsCost: number;
   };
 };
 
+// Shop labor rates by repair-action type. In a real system this would be a
+// per-shop / per-region rate table maintained by ops. Agents can override the
+// per-line rate to correct lookup errors; they edit hours to express judgment
+// about repair complexity.
+export const LABOR_RATES: Record<EstimateLine["type"], number> = {
+  Replacement: 95,
+  Repair: 145,
+  Refinish: 120,
+  Service: 180,
+  Labor: 110,
+};
+
+export function laborCostOf(l: EstimateLine): number {
+  return Math.round((l.laborHours ?? 0) * (l.laborRate ?? 0));
+}
+
 export function lineTotal(l: EstimateLine): number {
-  return (l.laborCost ?? 0) + (l.partsCost ?? 0);
+  return laborCostOf(l) + (l.partsCost ?? 0);
 }
 
 export type AuditEntry = {
