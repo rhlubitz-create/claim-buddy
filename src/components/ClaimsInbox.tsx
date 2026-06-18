@@ -8,6 +8,16 @@ const severityStyles: Record<Severity, string> = {
   Minor: "bg-secondary text-muted-foreground ring-1 ring-border",
 };
 
+function confidenceStyles(score: number): string {
+  if (score < 60) {
+    return "bg-destructive/10 text-destructive ring-1 ring-destructive/20";
+  }
+  if (score < 80) {
+    return "bg-warning/15 text-warning-foreground ring-1 ring-warning/30";
+  }
+  return "bg-success/10 text-success-foreground ring-1 ring-success/20";
+}
+
 type Props = {
   claims: Claim[];
   selectedId: string;
@@ -56,33 +66,38 @@ export function ClaimsInbox({ claims, selectedId, onSelect, onDelete }: Props) {
                   <div className="font-medium text-sm text-foreground truncate">
                     {claim.policyholder.name}
                   </div>
-                  <div>
-                    <span
-                      className={cn(
-                        "inline-block px-1.5 py-0.5 rounded-sm text-[10px] font-bold uppercase tracking-wider whitespace-nowrap",
-                        severityStyles[claim.accident.severity],
-                      )}
-                    >
-                      {claim.accident.severity}
-                    </span>
-                  </div>
                   <div className="text-muted-foreground text-xs truncate">
                     {claim.vehicle.year} {claim.vehicle.make} {claim.vehicle.model} · #{claim.id}
                   </div>
                   <div className="text-[11px] text-muted-foreground/80">
                     Submitted: <span className="font-mono">{submittedStr}</span>
                   </div>
+                  <div className="flex items-center gap-2 pt-0.5">
+                    <span
+                      className={cn(
+                        "inline-block px-1.5 py-0.5 rounded-sm text-[10px] font-bold whitespace-nowrap",
+                        confidenceStyles(claim.estimate.overallConfidence),
+                      )}
+                    >
+                      {claim.estimate.overallConfidence}% conf.
+                    </span>
+                    {hasFlags && (
+                      <span className="text-[10px] text-destructive flex items-center gap-1 italic whitespace-nowrap">
+                        <AlertTriangle className="size-3" />
+                        {claim.flags.length} flag{claim.flags.length > 1 ? "s" : ""}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                  <span className="text-[10px] font-mono bg-secondary border border-border px-1.5 py-0.5 rounded text-muted-foreground whitespace-nowrap">
-                    {claim.estimate.overallConfidence}% conf.
+                  <span
+                    className={cn(
+                      "inline-block px-1.5 py-0.5 rounded-sm text-[10px] font-bold uppercase tracking-wider whitespace-nowrap",
+                      severityStyles[claim.accident.severity],
+                    )}
+                  >
+                    {claim.accident.severity}
                   </span>
-                  {hasFlags && (
-                    <span className="text-[10px] text-destructive flex items-center gap-1 italic whitespace-nowrap">
-                      <AlertTriangle className="size-3" />
-                      {claim.flags.length} flag{claim.flags.length > 1 ? "s" : ""}
-                    </span>
-                  )}
                 </div>
               </div>
               </button>
