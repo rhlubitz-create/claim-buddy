@@ -527,7 +527,7 @@ export function generateEstimateForNewClaim(severity: Severity): Claim["estimate
 // they are equal. Values are derived from each claim's photo / line items
 // / historical comparables so demo numbers stay internally consistent.
 export type ConfidenceMetric = {
-  key: "photoCompleteness" | "damageComplexity" | "lineItemAvg" | "historicalMatch";
+  key: "photoCompleteness" | "damageComplexity" | "repairScope" | "historicalMatch" | "claimConsistency";
   label: string;
   weight: number; // 0-1
   score: number; // 0-100
