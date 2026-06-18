@@ -388,143 +388,38 @@ export function ClaimDetail({
                           {overall}%
                         </button>
                       </PopoverTrigger>
-                      <PopoverContent align="end" className="w-[28rem] p-0 overflow-hidden">
-                        <div className="p-4 space-y-4">
-                          {/* Header with donut */}
-                          <div className="flex items-start gap-4">
-                            <DonutChart score={overall} size={72} strokeWidth={7} />
-                            <div className="pt-1">
-                              <div className="text-2xl font-bold tracking-tight">{overall}%</div>
-                              <div className="text-sm font-medium text-foreground/80">
+                      <PopoverContent align="end" className="w-72 p-0 overflow-hidden">
+                        <div className="p-4 space-y-3">
+                          <div className="flex items-center gap-3">
+                            <DonutChart score={overall} size={56} strokeWidth={6} />
+                            <div>
+                              <div className="text-xl font-bold tracking-tight leading-none">
+                                {overall}%
+                              </div>
+                              <div className="text-xs font-medium text-foreground/80 mt-1">
                                 {overall >= 80
                                   ? "High confidence"
                                   : overall >= 60
                                     ? "Moderate confidence"
                                     : "Low confidence"}
                               </div>
-                              {claim.flags.length > 0 && (
-                                <div className="text-xs text-destructive mt-1">
-                                  Active flag is suppressing this score. Resolve mismatch to
-                                  reassess.
-                                </div>
-                              )}
                             </div>
                           </div>
-
-                          {/* Flag banner */}
-                          {claim.flags.length > 0 && (
-                            <div className="bg-warning/10 border border-warning/25 rounded-md p-3 text-xs">
-                              <div className="flex items-start gap-2">
-                                <AlertTriangle className="size-4 text-warning-foreground flex-shrink-0 mt-0.5" />
-                                <p className="text-foreground/90 leading-relaxed">
-                                  Claim consistency flag active. Reported severity (
-                                  {claim.accident.severity}) does not match photo evidence
-                                  (cosmetic). This signal is penalized — score would be{" "}
-                                  {Math.round(
-                                    metrics.reduce(
-                                      (s, m) =>
-                                        s +
-                                        (m.key === "claimConsistency" ? 85 : m.score) *
-                                          m.weight,
-                                      0,
-                                    ),
-                                  )}
-                                  % without this flag.
-                                </p>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Metrics */}
-                          <div className="space-y-3">
-                            {metrics.map((m) => (
-                              <div key={m.key} className="space-y-1">
-                                <div className="flex items-center justify-between gap-2">
-                                  <div className="flex items-center gap-2">
-                                    <MetricIcon
-                                      metricKey={m.key}
-                                      className="size-4 text-muted-foreground"
-                                    />
-                                    <span className="text-sm font-semibold text-foreground">
-                                      {m.label}
-                                    </span>
-                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono bg-muted text-muted-foreground">
-                                      {Math.round(m.weight * 100)}%
-                                    </span>
-                                  </div>
-                                  <span
-                                    className={cn(
-                                      "text-sm font-semibold",
-                                      m.score >= 80
-                                        ? "text-success"
-                                        : m.score >= 50
-                                          ? "text-warning-foreground"
-                                          : "text-destructive",
-                                    )}
-                                  >
-                                    {m.score}%
-                                  </span>
-                                </div>
-                                <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                                  <div
-                                    className={cn(
-                                      "h-full rounded-full",
-                                      m.score >= 80
-                                        ? "bg-success"
-                                        : m.score >= 50
-                                          ? "bg-chart-1"
-                                          : "bg-destructive",
-                                    )}
-                                    style={{ width: `${m.score}%` }}
-                                  />
-                                </div>
-                                <p className="text-xs text-muted-foreground leading-relaxed">
-                                  {m.detail}
-                                </p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Weighted calculation */}
-                        <div className="bg-muted/50 border-t border-border p-4 space-y-2">
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                            Weighted Calculation
-                          </p>
-                          <p className="text-xs font-mono text-foreground/80">
-                            {metrics
-                              .map((m) => `(${m.score} × ${Math.round(m.weight * 100)}%)`)
-                              .join(" + ")}
-                          </p>
-                          <p className="text-xs font-mono text-foreground/80">
-                            ={" "}
-                            {metrics
-                              .map((m) => (m.score * m.weight).toFixed(1))
-                              .join(" + ")} ={" "}
-                            {metrics
-                              .reduce((s, m) => s + m.score * m.weight, 0)
-                              .toFixed(1)}
-                            % →{" "}
-                            <span className="font-semibold text-foreground">
-                              rounded to {overall}%
-                            </span>
+                          <p className="text-xs text-muted-foreground leading-relaxed">
+                            Weighted composite of 5 signals
+                            {claim.flags.length > 0
+                              ? " — currently penalized by an active flag."
+                              : "."}
                           </p>
                         </div>
-
-                        {/* Footer */}
-                        <div className="flex items-center justify-between px-4 py-2.5 border-t border-border bg-card text-[11px] text-muted-foreground">
-                          <span className="flex items-center gap-1.5">
-                            <RefreshCw className="size-3" />
-                            Recalculates on each agent action
-                          </span>
-                          <button
-                            type="button"
-                            className="text-primary hover:underline flex items-center gap-1"
-                          >
-                            <Info className="size-3" />
-                            Configure weights
-                          </button>
-                        </div>
+                        <button
+                          type="button"
+                          onClick={onViewConfidence}
+                          className="w-full flex items-center justify-between gap-2 px-4 py-2.5 border-t border-border bg-muted/40 hover:bg-muted transition-colors text-xs font-medium text-primary"
+                        >
+                          View full breakdown
+                          <ArrowRight className="size-3.5" />
+                        </button>
                       </PopoverContent>
                     </Popover>
                   </td>
