@@ -522,10 +522,10 @@ export function generateEstimateForNewClaim(severity: Severity): Claim["estimate
   };
 }
 
-// Four equally-weighted signals (25% each) that the AI confidence pill
-// surfaces. Admins could re-weight these in the future, but for the demo
-// they are equal. Values are derived from each claim's photo / line items
-// / historical comparables so demo numbers stay internally consistent.
+// Five equally-weighted signals (20% each) that the AI confidence pill
+// surfaces. Admins could re-weight these in the future, but for now they are
+// equal. Values are derived from each claim's photo / line items / historical
+// comparables so demo numbers stay internally consistent.
 export type ConfidenceMetric = {
   key: "photoCompleteness" | "damageComplexity" | "repairScope" | "historicalMatch" | "claimConsistency";
   label: string;
@@ -585,7 +585,7 @@ export function getConfidenceBreakdown(claim: Claim): {
     {
       key: "photoCompleteness",
       label: "Photo & input quality",
-      weight: 0.30,
+      weight: 0.20,
       score: photoCompleteness,
       detail: hasPhotoMismatch
         ? "Submitted photo does not match claim description or vehicle. Request additional documentation."
@@ -626,7 +626,7 @@ export function getConfidenceBreakdown(claim: Claim): {
     {
       key: "claimConsistency",
       label: "Claim consistency",
-      weight: 0.10,
+      weight: 0.20,
       score: claimConsistency,
       detail: claim.flags.length
         ? `Severity mismatch detected. Reported: ${claim.accident.severity} / ${claim.accident.damageType}. Photo evidence: cosmetic Level 1. Flagged for agent review.`
