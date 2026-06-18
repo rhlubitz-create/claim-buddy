@@ -2,7 +2,20 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import type { Claim, EstimateLine } from "@/data/claims";
 import { getConfidenceBreakdown, lineTotal } from "@/data/claims";
-import { AlertTriangle, CheckCircle2, PanelRightOpen, Send, Info, Check, Sparkles } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  PanelRightOpen,
+  Send,
+  Info,
+  Check,
+  Sparkles,
+  History,
+  ChevronDown,
+  FileText,
+  PencilLine,
+  Bot,
+} from "lucide-react";
 import { OverrideDialog } from "./OverrideDialog";
 import { toast } from "sonner";
 import {
@@ -10,6 +23,18 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import type { AuditEntry } from "@/data/claims";
 
 function confidencePillStyle(c: number) {
   if (c >= 85) return "bg-success/10 text-success ring-1 ring-success/20";
@@ -173,12 +198,40 @@ export function ClaimDetail({
                     <td className="py-3 px-4">{line.action}</td>
                     <td className="py-3 px-4 text-muted-foreground text-xs">{line.type}</td>
                     <td className="py-3 px-4 text-right font-mono text-xs">
-                      <div>${line.laborCost.toLocaleString()}</div>
+                      <EditedValueCell
+                        edited={
+                          !!line.overridden &&
+                          !!line.override &&
+                          line.override.previousLaborCost !== line.laborCost
+                        }
+                        current={`$${line.laborCost.toLocaleString()}`}
+                        previous={
+                          line.override
+                            ? `$${line.override.previousLaborCost.toLocaleString()}`
+                            : undefined
+                        }
+                        override={line.override}
+                        field="Labor"
+                      />
                       <div className="text-[10px] text-muted-foreground">{line.laborHours}h</div>
                     </td>
                     <td className="py-3 px-4 text-right font-mono text-xs">
-                      {line.partsCost > 0 ? (
-                        <>${line.partsCost.toLocaleString()}</>
+                      {line.partsCost > 0 || (line.override && line.override.previousPartsCost > 0) ? (
+                        <EditedValueCell
+                          edited={
+                            !!line.overridden &&
+                            !!line.override &&
+                            line.override.previousPartsCost !== line.partsCost
+                          }
+                          current={`$${line.partsCost.toLocaleString()}`}
+                          previous={
+                            line.override
+                              ? `$${line.override.previousPartsCost.toLocaleString()}`
+                              : undefined
+                          }
+                          override={line.override}
+                          field="Parts"
+                        />
                       ) : (
                         <span className="text-muted-foreground">—</span>
                       )}
@@ -357,6 +410,9 @@ export function ClaimDetail({
             </button>
           </div>
         </section>
+
+        {/* Section 3: Audit Log */}
+        <AuditLogSection entries={claim.auditLog ?? []} />
       </div>
 
       <OverrideDialog
@@ -368,6 +424,144 @@ export function ClaimDetail({
       />
     </main>
   );
+}
+
+function EditedValueCell({
+  edited,
+  current,
+  previous,
+  override,
+  field,
+}: {
+  edited: boolean;
+  current: string;
+  previous?: string;
+  override?: NonNullable<EstimateLine["override"]>;
+  field: string;
+}) {
+  if (!edited || !override) {
+    return <div>{current}</div>;
+  }
+  return (
+    <TooltipProvider delayDuration={150}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span
+            tabIndex={0}
+            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-warning/15 text-warning-foreground ring-1 ring-warning/30 cursor-help"
+          >
+            <PencilLine className="size-2.5" />
+            {current}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="max-w-xs space-y-1 text-left">
+          <div className="text-[10px] font-bold uppercase tracking-widest opacity-80">
+            {field} edited
+          </div>
+          <div className="font-mono">
+            <span className="line-through opacity-70">{previous}</span>
+            <span className="mx-1">→</span>
+            <span className="font-semibold">{current}</span>
+          </div>
+          <div className="opacity-80">By {override.by}</div>
+          {override.rationale && (
+            <div className="italic opacity-80">"{override.rationale}"</div>
+          )}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
+function AuditLogSection({ entries }: { entries: AuditEntry[] }) {
+  const [open, setOpen] = useState(true);
+  const sorted = [...entries].sort(
+    (a, b) => new Date(b.at).getTime() - new Date(a.at).getTime(),
+  );
+  return (
+    <section className="rounded-md border border-border bg-secondary/30">
+      <Collapsible open={open} onOpenChange={setOpen}>
+        <CollapsibleTrigger className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-secondary/60 transition-colors rounded-md">
+          <div className="flex items-center gap-2">
+            <History className="size-4 text-muted-foreground" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              Audit Log
+            </span>
+            <span className="text-[10px] font-mono bg-background px-1.5 py-0.5 rounded border border-border text-muted-foreground">
+              {sorted.length}
+            </span>
+          </div>
+          <ChevronDown
+            className={cn(
+              "size-4 text-muted-foreground transition-transform",
+              open && "rotate-180",
+            )}
+          />
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="border-t border-border">
+            {sorted.length === 0 ? (
+              <p className="px-4 py-6 text-xs text-muted-foreground text-center">
+                No activity yet.
+              </p>
+            ) : (
+              <ol className="divide-y divide-border/60">
+                {sorted.map((e, i) => (
+                  <AuditRow key={i} entry={e} />
+                ))}
+              </ol>
+            )}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+    </section>
+  );
+}
+
+function AuditRow({ entry }: { entry: AuditEntry }) {
+  const meta = auditMeta(entry.kind);
+  const Icon = meta.icon;
+  return (
+    <li className="flex items-start gap-3 px-4 py-3">
+      <span
+        className={cn(
+          "mt-0.5 inline-flex items-center justify-center size-6 rounded-full flex-shrink-0",
+          meta.bg,
+        )}
+      >
+        <Icon className={cn("size-3.5", meta.fg)} />
+      </span>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-baseline justify-between gap-3">
+          <p className="text-xs font-medium text-foreground">{entry.summary}</p>
+          <span className="text-[10px] font-mono text-muted-foreground whitespace-nowrap">
+            {new Date(entry.at).toLocaleString()}
+          </span>
+        </div>
+        {entry.detail && (
+          <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
+            {entry.detail}
+          </p>
+        )}
+        <p className="text-[10px] text-muted-foreground/80 mt-1">by {entry.actor}</p>
+      </div>
+    </li>
+  );
+}
+
+function auditMeta(kind: AuditEntry["kind"]) {
+  switch (kind) {
+    case "claim_filed":
+      return { icon: FileText, bg: "bg-muted", fg: "text-muted-foreground" };
+    case "ai_estimate_generated":
+      return { icon: Bot, bg: "bg-primary/10", fg: "text-primary" };
+    case "flag_reviewed":
+      return { icon: Check, bg: "bg-success/15", fg: "text-success" };
+    case "override_saved":
+      return { icon: PencilLine, bg: "bg-warning/20", fg: "text-warning-foreground" };
+    case "claim_accepted":
+      return { icon: Send, bg: "bg-success/15", fg: "text-success" };
+  }
 }
 
 function Field({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
