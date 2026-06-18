@@ -282,15 +282,30 @@ export function ClaimDetail({
                       )}
                     </td>
                     <td className="py-3 px-4 text-center">
-                      <span
-                        className={cn(
-                          "inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-semibold",
-                          confidencePillStyle(line.confidence),
-                        )}
-                      >
-                        {line.confidence}%
-                      </span>
+                      <TooltipProvider delayDuration={150}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span
+                              className={cn(
+                                "inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-semibold cursor-help",
+                                confidencePillStyle(line.confidence),
+                              )}
+                            >
+                              {line.confidence}%
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-xs">
+                            <p className="font-semibold mb-1">Line-item confidence</p>
+                            <p className="text-muted-foreground">
+                              How certain the model is that this repair action is needed, correctly
+                              scoped, and accurately priced for the visible damage and historical
+                              comparables.
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </td>
+
                     <td className="py-3 px-4 text-right font-mono font-medium">
                       {line.overridden && line.override ? (
                         <Popover>
