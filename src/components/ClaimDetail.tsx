@@ -575,6 +575,85 @@ export function ClaimDetail({
   );
 }
 
+function DonutChart({
+  score,
+  size = 72,
+  strokeWidth = 7,
+}: {
+  score: number;
+  size?: number;
+  strokeWidth?: number;
+}) {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const dash = (score / 100) * circumference;
+  const color =
+    score >= 80
+      ? "var(--success)"
+      : score >= 50
+        ? "var(--chart-1)"
+        : "var(--destructive)";
+
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      className="flex-shrink-0"
+    >
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke="var(--border)"
+        strokeWidth={strokeWidth}
+      />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke={color}
+        strokeWidth={strokeWidth}
+        strokeDasharray={`${dash} ${circumference - dash}`}
+        strokeLinecap="round"
+        transform={`rotate(-90 ${size / 2} ${size / 2})`}
+      />
+      <text
+        x={size / 2}
+        y={size / 2}
+        dominantBaseline="middle"
+        textAnchor="middle"
+        style={{ fill: "var(--foreground)", fontSize: "13px", fontWeight: 700 }}
+      >
+        {score}%
+      </text>
+    </svg>
+  );
+}
+
+function MetricIcon({
+  metricKey,
+  className,
+}: {
+  metricKey: ConfidenceMetric["key"];
+  className?: string;
+}) {
+  switch (metricKey) {
+    case "photoCompleteness":
+      return <Camera className={className} />;
+    case "damageComplexity":
+      return <BarChart3 className={className} />;
+    case "repairScope":
+      return <ClipboardList className={className} />;
+    case "historicalMatch":
+      return <History className={className} />;
+    case "claimConsistency":
+      return <ShieldAlert className={className} />;
+  }
+}
+
 function EditedValueCell({
   edited,
   current,
