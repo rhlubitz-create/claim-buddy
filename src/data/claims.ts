@@ -21,16 +21,22 @@ export type EstimateLine = {
   action: string;
   type: "Replacement" | "Repair" | "Refinish" | "Service" | "Labor";
   laborHours: number;
-  cost: number;
+  laborCost: number;
+  partsCost: number;
   confidence: number; // 0-100
   overridden?: boolean;
   override?: {
     by: string;
     rationale: string;
     at: string; // ISO timestamp
-    previousCost: number;
+    previousLaborCost: number;
+    previousPartsCost: number;
   };
 };
+
+export function lineTotal(l: EstimateLine): number {
+  return (l.laborCost ?? 0) + (l.partsCost ?? 0);
+}
 
 export type SimilarClaim = {
   id: string;
@@ -108,7 +114,8 @@ export const CLAIMS: Claim[] = [
           action: "Rear Quarter Panel Dent Repair",
           type: "Repair",
           laborHours: 2.2,
-          cost: 480,
+          laborCost: 420,
+          partsCost: 60,
           confidence: 94,
         },
         {
@@ -116,7 +123,8 @@ export const CLAIMS: Claim[] = [
           action: "Taillamp Housing Inspection",
           type: "Repair",
           laborHours: 0.6,
-          cost: 145,
+          laborCost: 145,
+          partsCost: 0,
           confidence: 71,
         },
         {
@@ -124,7 +132,8 @@ export const CLAIMS: Claim[] = [
           action: "Paint & Refinish (Metallic Pearl)",
           type: "Refinish",
           laborHours: 3.5,
-          cost: 520,
+          laborCost: 340,
+          partsCost: 180,
           confidence: 58,
         },
       ],
@@ -179,7 +188,8 @@ export const CLAIMS: Claim[] = [
           action: "Front Bumper Assembly (Fiat OEM)",
           type: "Replacement",
           laborHours: 2.5,
-          cost: 540,
+          laborCost: 160,
+          partsCost: 380,
           confidence: 93,
         },
         {
@@ -187,7 +197,8 @@ export const CLAIMS: Claim[] = [
           action: "Headlamp Assemblies (Pair)",
           type: "Replacement",
           laborHours: 1.4,
-          cost: 380,
+          laborCost: 100,
+          partsCost: 280,
           confidence: 91,
         },
         {
@@ -195,7 +206,8 @@ export const CLAIMS: Claim[] = [
           action: "Full Exterior Repaint (Red)",
           type: "Refinish",
           laborHours: 12.0,
-          cost: 2150,
+          laborCost: 1500,
+          partsCost: 650,
           confidence: 84,
         },
       ],
@@ -242,7 +254,8 @@ export const CLAIMS: Claim[] = [
           action: "Front-Left Fender Refinish",
           type: "Refinish",
           laborHours: 3.0,
-          cost: 640,
+          laborCost: 420,
+          partsCost: 220,
           confidence: 88,
         },
         {
@@ -250,7 +263,8 @@ export const CLAIMS: Claim[] = [
           action: "Front Bumper Corner Blend",
           type: "Refinish",
           laborHours: 2.0,
-          cost: 420,
+          laborCost: 280,
+          partsCost: 140,
           confidence: 74,
         },
         {
@@ -258,7 +272,8 @@ export const CLAIMS: Claim[] = [
           action: "Suspension Geometry Check",
           type: "Service",
           laborHours: 1.0,
-          cost: 180,
+          laborCost: 180,
+          partsCost: 0,
           confidence: 82,
         },
       ],
@@ -312,7 +327,8 @@ export const CLAIMS: Claim[] = [
           action: "Pending — additional photos required",
           type: "Service",
           laborHours: 0,
-          cost: 0,
+          laborCost: 0,
+          partsCost: 0,
           confidence: 30,
         },
       ],
@@ -356,7 +372,8 @@ export const CLAIMS: Claim[] = [
           action: "Headlamp Assembly (verify vehicle first)",
           type: "Replacement",
           laborHours: 1.2,
-          cost: 0,
+          laborCost: 0,
+          partsCost: 0,
           confidence: 35,
         },
       ],
@@ -443,10 +460,10 @@ export function generateEstimateForNewClaim(severity: Severity): Claim["estimate
       summary:
         "Damage appears significant. Recommend panel replacement, headlamp/taillamp inspection, and full refinish. Structural inspection advised before final approval.",
       lines: [
-        { id: "l1", action: "Panel Replacement", type: "Replacement", laborHours: 4.5, cost: 1450, confidence: 78 },
-        { id: "l2", action: "Lamp Assembly Replacement", type: "Replacement", laborHours: 1.2, cost: 420, confidence: 74 },
-        { id: "l3", action: "Paint & Refinish", type: "Refinish", laborHours: 5.0, cost: 880, confidence: 66 },
-        { id: "l4", action: "Structural Inspection", type: "Service", laborHours: 1.5, cost: 240, confidence: 55 },
+        { id: "l1", action: "Panel Replacement", type: "Replacement", laborHours: 4.5, laborCost: 500, partsCost: 950, confidence: 78 },
+        { id: "l2", action: "Lamp Assembly Replacement", type: "Replacement", laborHours: 1.2, laborCost: 120, partsCost: 300, confidence: 74 },
+        { id: "l3", action: "Paint & Refinish", type: "Refinish", laborHours: 5.0, laborCost: 600, partsCost: 280, confidence: 66 },
+        { id: "l4", action: "Structural Inspection", type: "Service", laborHours: 1.5, laborCost: 240, partsCost: 0, confidence: 55 },
       ],
     };
   }
@@ -456,9 +473,9 @@ export function generateEstimateForNewClaim(severity: Severity): Claim["estimate
       summary:
         "Moderate cosmetic and minor structural damage. Dent repair, bumper blend, and partial refinish recommended.",
       lines: [
-        { id: "l1", action: "Dent Repair", type: "Repair", laborHours: 2.5, cost: 520, confidence: 88 },
-        { id: "l2", action: "Bumper Corner Blend", type: "Refinish", laborHours: 2.0, cost: 410, confidence: 79 },
-        { id: "l3", action: "Paint & Refinish (partial)", type: "Refinish", laborHours: 2.5, cost: 380, confidence: 76 },
+        { id: "l1", action: "Dent Repair", type: "Repair", laborHours: 2.5, laborCost: 440, partsCost: 80, confidence: 88 },
+        { id: "l2", action: "Bumper Corner Blend", type: "Refinish", laborHours: 2.0, laborCost: 270, partsCost: 140, confidence: 79 },
+        { id: "l3", action: "Paint & Refinish (partial)", type: "Refinish", laborHours: 2.5, laborCost: 250, partsCost: 130, confidence: 76 },
       ],
     };
   }
@@ -467,8 +484,8 @@ export function generateEstimateForNewClaim(severity: Severity): Claim["estimate
     summary:
       "Minor cosmetic damage. Paintless dent repair and spot refinish should restore the affected area.",
     lines: [
-      { id: "l1", action: "Paintless Dent Repair", type: "Repair", laborHours: 1.2, cost: 220, confidence: 93 },
-      { id: "l2", action: "Spot Refinish", type: "Refinish", laborHours: 1.0, cost: 180, confidence: 89 },
+      { id: "l1", action: "Paintless Dent Repair", type: "Repair", laborHours: 1.2, laborCost: 220, partsCost: 0, confidence: 93 },
+      { id: "l2", action: "Spot Refinish", type: "Refinish", laborHours: 1.0, laborCost: 120, partsCost: 60, confidence: 89 },
     ],
   };
 }
