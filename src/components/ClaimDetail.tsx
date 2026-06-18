@@ -180,16 +180,52 @@ export function ClaimDetail({
                       </span>
                     </td>
                     <td className="py-3 px-4 text-right font-mono font-medium">
-                      {line.overridden ? (
-                        <span
-                          className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-warning/15 text-warning-foreground ring-1 ring-warning/30"
-                          title="Manually overridden by claims agent"
-                        >
-                          <span className="text-[9px] font-bold uppercase tracking-wider">
-                            Edited
-                          </span>
-                          ${line.cost.toLocaleString()}
-                        </span>
+                      {line.overridden && line.override ? (
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button
+                              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-warning/15 text-warning-foreground ring-1 ring-warning/30 hover:brightness-95 transition"
+                              title="View override audit trail"
+                            >
+                              <span className="text-[9px] font-bold uppercase tracking-wider">
+                                Edited
+                              </span>
+                              ${line.cost.toLocaleString()}
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent align="end" className="w-80 text-xs space-y-2">
+                            <div>
+                              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+                                Override audit trail
+                              </p>
+                              <p className="text-foreground/90 font-medium">{line.action}</p>
+                            </div>
+                            <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5">
+                              <dt className="text-muted-foreground">Original</dt>
+                              <dd className="font-mono line-through text-muted-foreground">
+                                ${line.override.previousCost.toLocaleString()}
+                              </dd>
+                              <dt className="text-muted-foreground">New</dt>
+                              <dd className="font-mono font-semibold">
+                                ${line.cost.toLocaleString()}
+                              </dd>
+                              <dt className="text-muted-foreground">By</dt>
+                              <dd>{line.override.by}</dd>
+                              <dt className="text-muted-foreground">When</dt>
+                              <dd className="font-mono text-[11px]">
+                                {new Date(line.override.at).toLocaleString()}
+                              </dd>
+                            </dl>
+                            <div className="border-t border-border pt-2">
+                              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+                                Rationale
+                              </p>
+                              <p className="text-foreground/90 leading-relaxed italic">
+                                "{line.override.rationale}"
+                              </p>
+                            </div>
+                          </PopoverContent>
+                        </Popover>
                       ) : (
                         <>${line.cost.toLocaleString()}</>
                       )}
