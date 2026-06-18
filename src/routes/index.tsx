@@ -99,9 +99,12 @@ function Index() {
         </TabBtn>
       </nav>
 
-      <div className="px-4 py-2.5 bg-primary/10 border-b border-primary/20 flex items-center gap-2 text-sm font-medium text-primary">
-        <span className="size-2 rounded-full bg-primary animate-pulse" />
-        Welcome, Alex Park
+      <div className="px-6 py-4 bg-primary/10 border-b border-primary/20 flex items-center gap-3">
+        <span className="size-3 rounded-full bg-primary animate-pulse" />
+        <div className="flex flex-col">
+          <span className="text-xs uppercase tracking-wider text-primary/70 font-semibold">Welcome</span>
+          <span className="text-lg font-bold text-primary">Alex Park</span>
+        </div>
       </div>
 
       {tab === "submit" ? (
