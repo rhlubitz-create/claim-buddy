@@ -74,15 +74,18 @@ export function ClaimDetail({
           <h1 className="text-base font-semibold tracking-tight">Claim Review</h1>
           <span className="text-xs font-mono text-muted-foreground">#{claim.id}</span>
         </div>
-        {!railOpen && (
-          <button
-            onClick={onOpenRail}
-            className="text-xs flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded hover:bg-secondary"
-          >
-            <PanelRightOpen className="size-3.5" />
-            Show similar claims
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          <AuditLogPopover entries={claim.auditLog ?? []} />
+          {!railOpen && (
+            <button
+              onClick={onOpenRail}
+              className="text-xs flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded hover:bg-secondary"
+            >
+              <PanelRightOpen className="size-3.5" />
+              Show similar claims
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
