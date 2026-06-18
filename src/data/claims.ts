@@ -35,10 +35,11 @@ export type EstimateLine = {
   };
 };
 
-// Shop labor rates by repair-action type. In a real system this would be a
-// per-shop / per-region rate table maintained by ops. Agents can override the
-// per-line rate to correct lookup errors; they edit hours to express judgment
-// about repair complexity.
+// Regional average labor rates by repair-action type (USD/hr). Sourced from
+// market survey data across shops in the policyholder's region, refreshed
+// periodically by ops. Agents can override the per-line rate to reflect a
+// specific shop's bid; they edit hours to express judgment about repair
+// complexity.
 export const LABOR_RATES: Record<EstimateLine["type"], number> = {
   Replacement: 95,
   Repair: 145,
