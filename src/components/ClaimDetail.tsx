@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import type { Claim, EstimateLine } from "@/data/claims";
-import { getConfidenceBreakdown, lineTotal } from "@/data/claims";
+import { getConfidenceBreakdown, lineTotal, laborCostOf } from "@/data/claims";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -62,7 +62,7 @@ export function ClaimDetail({
   const [overrideOpen, setOverrideOpen] = useState(false);
 
   const total = claim.estimate.lines.reduce((sum, l) => sum + lineTotal(l), 0);
-  const laborTotal = claim.estimate.lines.reduce((s, l) => s + l.laborCost, 0);
+  const laborTotal = claim.estimate.lines.reduce((s, l) => s + laborCostOf(l), 0);
   const partsTotal = claim.estimate.lines.reduce((s, l) => s + l.partsCost, 0);
   const { metrics, overall } = getConfidenceBreakdown(claim);
 
