@@ -15,6 +15,11 @@ import {
   FileText,
   PencilLine,
   Bot,
+  Camera,
+  BarChart3,
+  ClipboardList,
+  ShieldAlert,
+  RefreshCw,
 } from "lucide-react";
 import { OverrideDialog } from "./OverrideDialog";
 import { toast } from "sonner";
