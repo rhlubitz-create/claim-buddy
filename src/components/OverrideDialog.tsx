@@ -36,13 +36,23 @@ export function OverrideDialog({ open, onOpenChange, lines, claimId, onSave }: P
       toast.error("Rationale is required when overriding an AI estimate.");
       return;
     }
+    const now = new Date().toISOString();
+    const agent = "Alex Park (Claims Agent)";
     const updated: EstimateLine[] = lines.map((l) => {
       const newCost = parseFloat(values[l.id]) || 0;
       const changed = newCost !== l.cost;
+      if (!changed) return l;
       return {
         ...l,
         cost: newCost,
-        overridden: l.overridden || changed,
+        overridden: true,
+        override: {
+          by: agent,
+          rationale: rationale.trim(),
+          at: now,
+          // Preserve the ORIGINAL AI cost across repeated overrides.
+          previousCost: l.override?.previousCost ?? l.cost,
+        },
       };
     });
     onSave?.(updated);
