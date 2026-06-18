@@ -144,13 +144,10 @@ export function ClaimDetail({
 
         {/* Section 2: AI Estimate */}
         <section className="space-y-3 rounded-md border border-primary/25 bg-primary/[0.04] p-4 ring-1 ring-primary/10">
-          <div className="flex items-center justify-between gap-2">
-            <h2 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider ring-1 ring-primary/20">
+              <Sparkles className="size-3.5" />
               AI Generated Damage Assessment and Cost Estimates
-            </h2>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider ring-1 ring-primary/20">
-              <Sparkles className="size-3" />
-              AI Output · Unverified
             </span>
           </div>
 
