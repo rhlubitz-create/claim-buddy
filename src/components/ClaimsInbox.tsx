@@ -84,7 +84,7 @@ export function ClaimsInbox({ claims, selectedId, onSelect, onDelete }: Props) {
                     {hasFlags && (
                       <span className="text-[10px] text-destructive flex items-center gap-1 italic whitespace-nowrap">
                         <AlertTriangle className="size-3" />
-                        {claim.flags.length} flag{claim.flags.length > 1 ? "s" : ""}
+                        {claim.flags[0]?.title ?? `${claim.flags.length} flag${claim.flags.length > 1 ? "s" : ""}`}
                       </span>
                     )}
                   </div>
