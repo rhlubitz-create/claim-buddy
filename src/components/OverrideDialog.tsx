@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import type { EstimateLine } from "@/data/claims";
+import { lineTotal } from "@/data/claims";
 import { toast } from "sonner";
 
 type Props = {
@@ -23,12 +24,17 @@ type Props = {
 };
 
 export function OverrideDialog({ open, onOpenChange, lines, claimId, onSave }: Props) {
-  const [values, setValues] = useState<Record<string, string>>(() =>
-    Object.fromEntries(lines.map((l) => [l.id, l.cost.toString()])),
+  const [labor, setLabor] = useState<Record<string, string>>(() =>
+    Object.fromEntries(lines.map((l) => [l.id, l.laborCost.toString()])),
+  );
+  const [parts, setParts] = useState<Record<string, string>>(() =>
+    Object.fromEntries(lines.map((l) => [l.id, l.partsCost.toString()])),
   );
   const [rationale, setRationale] = useState("");
 
-  const total = Object.values(values).reduce((sum, v) => sum + (parseFloat(v) || 0), 0);
+  const lineNewTotal = (id: string) =>
+    (parseFloat(labor[id]) || 0) + (parseFloat(parts[id]) || 0);
+  const total = lines.reduce((sum, l) => sum + lineNewTotal(l.id), 0);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,19 +45,22 @@ export function OverrideDialog({ open, onOpenChange, lines, claimId, onSave }: P
     const now = new Date().toISOString();
     const agent = "Alex Park (Claims Agent)";
     const updated: EstimateLine[] = lines.map((l) => {
-      const newCost = parseFloat(values[l.id]) || 0;
-      const changed = newCost !== l.cost;
+      const newLabor = parseFloat(labor[l.id]) || 0;
+      const newParts = parseFloat(parts[l.id]) || 0;
+      const changed = newLabor !== l.laborCost || newParts !== l.partsCost;
       if (!changed) return l;
       return {
         ...l,
-        cost: newCost,
+        laborCost: newLabor,
+        partsCost: newParts,
         overridden: true,
         override: {
           by: agent,
           rationale: rationale.trim(),
           at: now,
-          // Preserve the ORIGINAL AI cost across repeated overrides.
-          previousCost: l.override?.previousCost ?? l.cost,
+          // Preserve the ORIGINAL AI costs across repeated overrides.
+          previousLaborCost: l.override?.previousLaborCost ?? l.laborCost,
+          previousPartsCost: l.override?.previousPartsCost ?? l.partsCost,
         },
       };
     });
@@ -64,7 +73,7 @@ export function OverrideDialog({ open, onOpenChange, lines, claimId, onSave }: P
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle>Override AI Estimate — {claimId}</DialogTitle>
           <DialogDescription>
@@ -75,23 +84,26 @@ export function OverrideDialog({ open, onOpenChange, lines, claimId, onSave }: P
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-3">
-            <div className="grid grid-cols-[1fr_auto_auto] gap-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground pb-1 border-b border-border">
+            <div className="grid grid-cols-[1fr_repeat(4,auto)] gap-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground pb-1 border-b border-border items-end">
               <span>Line Item</span>
-              <span className="text-right w-24">AI Cost</span>
-              <span className="text-right w-32">Override</span>
+              <span className="text-right w-24">AI Labor</span>
+              <span className="text-right w-28">Override Labor</span>
+              <span className="text-right w-24">AI Parts</span>
+              <span className="text-right w-28">Override Parts</span>
             </div>
             {lines.map((line) => (
-              <div key={line.id} className="grid grid-cols-[1fr_auto_auto] gap-3 items-center">
+              <div key={line.id} className="grid grid-cols-[1fr_repeat(4,auto)] gap-3 items-center">
                 <div>
                   <p className="text-sm font-medium">{line.action}</p>
                   <p className="text-xs text-muted-foreground">
-                    {line.type} · {line.laborHours}h · {line.confidence}% conf.
+                    {line.type} · {line.laborHours}h · {line.confidence}% conf. · current total $
+                    {lineTotal(line).toLocaleString()}
                   </p>
                 </div>
                 <span className="text-sm font-mono text-muted-foreground w-24 text-right">
-                  ${line.cost.toLocaleString()}
+                  ${line.laborCost.toLocaleString()}
                 </span>
-                <div className="relative w-32">
+                <div className="relative w-28">
                   <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
                     $
                   </span>
@@ -99,9 +111,27 @@ export function OverrideDialog({ open, onOpenChange, lines, claimId, onSave }: P
                     type="number"
                     min="0"
                     step="0.01"
-                    value={values[line.id]}
+                    value={labor[line.id]}
                     onChange={(e) =>
-                      setValues((prev) => ({ ...prev, [line.id]: e.target.value }))
+                      setLabor((prev) => ({ ...prev, [line.id]: e.target.value }))
+                    }
+                    className="pl-5 font-mono text-sm h-9"
+                  />
+                </div>
+                <span className="text-sm font-mono text-muted-foreground w-24 text-right">
+                  ${line.partsCost.toLocaleString()}
+                </span>
+                <div className="relative w-28">
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                    $
+                  </span>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={parts[line.id]}
+                    onChange={(e) =>
+                      setParts((prev) => ({ ...prev, [line.id]: e.target.value }))
                     }
                     className="pl-5 font-mono text-sm h-9"
                   />

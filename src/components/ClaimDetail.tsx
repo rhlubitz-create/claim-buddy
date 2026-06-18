@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import type { Claim, EstimateLine } from "@/data/claims";
-import { getConfidenceBreakdown } from "@/data/claims";
-import { AlertTriangle, CheckCircle2, PanelRightOpen, Send, Info, Check } from "lucide-react";
+import { getConfidenceBreakdown, lineTotal } from "@/data/claims";
+import { AlertTriangle, CheckCircle2, PanelRightOpen, Send, Info, Check, Sparkles } from "lucide-react";
 import { OverrideDialog } from "./OverrideDialog";
 import { toast } from "sonner";
 import {
@@ -36,7 +36,9 @@ export function ClaimDetail({
 }: Props) {
   const [overrideOpen, setOverrideOpen] = useState(false);
 
-  const total = claim.estimate.lines.reduce((sum, l) => sum + l.cost, 0);
+  const total = claim.estimate.lines.reduce((sum, l) => sum + lineTotal(l), 0);
+  const laborTotal = claim.estimate.lines.reduce((s, l) => s + l.laborCost, 0);
+  const partsTotal = claim.estimate.lines.reduce((s, l) => s + l.partsCost, 0);
   const { metrics, overall } = getConfidenceBreakdown(claim);
 
   return (
@@ -141,10 +143,16 @@ export function ClaimDetail({
         </section>
 
         {/* Section 2: AI Estimate */}
-        <section className="space-y-3">
-          <h2 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-            AI Generated Damage Assessment and Cost Estimates
-          </h2>
+        <section className="space-y-3 rounded-md border border-primary/25 bg-primary/[0.04] p-4 ring-1 ring-primary/10">
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              AI Generated Damage Assessment and Cost Estimates
+            </h2>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider ring-1 ring-primary/20">
+              <Sparkles className="size-3" />
+              AI Output · Unverified
+            </span>
+          </div>
 
           <p className="text-xs text-foreground/80 italic leading-relaxed">
             {claim.estimate.summary}
@@ -157,8 +165,9 @@ export function ClaimDetail({
                   <th className="py-2.5 px-4">Repair Action</th>
                   <th className="py-2.5 px-4">Type</th>
                   <th className="py-2.5 px-4 text-right">Labor</th>
+                  <th className="py-2.5 px-4 text-right">Parts</th>
                   <th className="py-2.5 px-4 text-center">Confidence</th>
-                  <th className="py-2.5 px-4 text-right">Cost</th>
+                  <th className="py-2.5 px-4 text-right">Total</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/60">
@@ -166,8 +175,16 @@ export function ClaimDetail({
                   <tr key={line.id} className="text-sm">
                     <td className="py-3 px-4">{line.action}</td>
                     <td className="py-3 px-4 text-muted-foreground text-xs">{line.type}</td>
-                    <td className="py-3 px-4 text-right font-mono text-xs text-muted-foreground">
-                      {line.laborHours}h
+                    <td className="py-3 px-4 text-right font-mono text-xs">
+                      <div>${line.laborCost.toLocaleString()}</div>
+                      <div className="text-[10px] text-muted-foreground">{line.laborHours}h</div>
+                    </td>
+                    <td className="py-3 px-4 text-right font-mono text-xs">
+                      {line.partsCost > 0 ? (
+                        <>${line.partsCost.toLocaleString()}</>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
                     </td>
                     <td className="py-3 px-4 text-center">
                       <span
@@ -190,7 +207,7 @@ export function ClaimDetail({
                               <span className="text-[9px] font-bold uppercase tracking-wider">
                                 Edited
                               </span>
-                              ${line.cost.toLocaleString()}
+                              ${lineTotal(line).toLocaleString()}
                             </button>
                           </PopoverTrigger>
                           <PopoverContent align="end" className="w-80 text-xs space-y-2">
@@ -201,13 +218,21 @@ export function ClaimDetail({
                               <p className="text-foreground/90 font-medium">{line.action}</p>
                             </div>
                             <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5">
-                              <dt className="text-muted-foreground">Original</dt>
+                              <dt className="text-muted-foreground">Original labor</dt>
                               <dd className="font-mono line-through text-muted-foreground">
-                                ${line.override.previousCost.toLocaleString()}
+                                ${line.override.previousLaborCost.toLocaleString()}
                               </dd>
-                              <dt className="text-muted-foreground">New</dt>
+                              <dt className="text-muted-foreground">New labor</dt>
                               <dd className="font-mono font-semibold">
-                                ${line.cost.toLocaleString()}
+                                ${line.laborCost.toLocaleString()}
+                              </dd>
+                              <dt className="text-muted-foreground">Original parts</dt>
+                              <dd className="font-mono line-through text-muted-foreground">
+                                ${line.override.previousPartsCost.toLocaleString()}
+                              </dd>
+                              <dt className="text-muted-foreground">New parts</dt>
+                              <dd className="font-mono font-semibold">
+                                ${line.partsCost.toLocaleString()}
                               </dd>
                               <dt className="text-muted-foreground">By</dt>
                               <dd>{line.override.by}</dd>
@@ -227,17 +252,23 @@ export function ClaimDetail({
                           </PopoverContent>
                         </Popover>
                       ) : (
-                        <>${line.cost.toLocaleString()}</>
+                        <>${lineTotal(line).toLocaleString()}</>
                       )}
                     </td>
                   </tr>
                 ))}
                 <tr className="bg-background/60">
                   <td
-                    colSpan={3}
+                    colSpan={2}
                     className="py-3 px-4 text-right text-xs font-bold uppercase tracking-widest text-muted-foreground"
                   >
                     Estimated Total
+                  </td>
+                  <td className="py-3 px-4 text-right font-mono text-xs text-muted-foreground">
+                    ${laborTotal.toLocaleString()}
+                  </td>
+                  <td className="py-3 px-4 text-right font-mono text-xs text-muted-foreground">
+                    ${partsTotal.toLocaleString()}
                   </td>
                   <td className="py-3 px-4 text-center">
                     <Popover>
@@ -305,30 +336,30 @@ export function ClaimDetail({
               </tbody>
             </table>
           </div>
-        </section>
-      </div>
 
-      {/* Action Bar */}
-      <div className="px-4 h-16 border-t border-border bg-card flex justify-end items-center gap-2 flex-shrink-0">
-        <button
-          onClick={() => setOverrideOpen(true)}
-          className="px-4 py-2 text-sm border border-border rounded-sm hover:bg-secondary transition-colors text-foreground/80"
-        >
-          Override Estimate
-        </button>
-        <button
-          onClick={() => {
-            toast.success(`Estimate accepted for ${claim.id}`, {
-              description: `Total: $${total.toLocaleString()}. Sent for final review.`,
-              icon: <Send className="size-4" />,
-            });
-            onAccept?.(claim.id);
-          }}
-          className="px-6 py-2 text-sm font-semibold bg-primary text-primary-foreground rounded-sm hover:brightness-110 transition-all flex items-center gap-2"
-        >
-          <Send className="size-3.5" />
-          Accept / Send for Review
-        </button>
+          {/* Action buttons inline with AI estimate section */}
+          <div className="flex justify-end items-center gap-2 pt-1">
+            <button
+              onClick={() => setOverrideOpen(true)}
+              className="px-4 py-2 text-sm border border-border bg-card rounded-sm hover:bg-secondary transition-colors text-foreground/80"
+            >
+              Override Estimate
+            </button>
+            <button
+              onClick={() => {
+                toast.success(`Estimate accepted for ${claim.id}`, {
+                  description: `Total: $${total.toLocaleString()}. Sent for final review.`,
+                  icon: <Send className="size-4" />,
+                });
+                onAccept?.(claim.id);
+              }}
+              className="px-6 py-2 text-sm font-semibold bg-primary text-primary-foreground rounded-sm hover:brightness-110 transition-all flex items-center gap-2"
+            >
+              <Send className="size-3.5" />
+              Accept / Send for Review
+            </button>
+          </div>
+        </section>
       </div>
 
       <OverrideDialog
