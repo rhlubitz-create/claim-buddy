@@ -133,7 +133,8 @@ function Index() {
           return (
             nl.overridden &&
             (!prevLine ||
-              prevLine.laborCost !== nl.laborCost ||
+              prevLine.laborHours !== nl.laborHours ||
+              prevLine.laborRate !== nl.laborRate ||
               prevLine.partsCost !== nl.partsCost)
           );
         });
