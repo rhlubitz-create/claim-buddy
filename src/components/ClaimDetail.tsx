@@ -15,11 +15,7 @@ import {
   FileText,
   PencilLine,
   Bot,
-  Camera,
-  BarChart3,
-  ClipboardList,
-  ShieldAlert,
-  RefreshCw,
+  ArrowRight,
 } from "lucide-react";
 import { OverrideDialog } from "./OverrideDialog";
 import { toast } from "sonner";
@@ -54,6 +50,7 @@ type Props = {
   onDismissFlag?: (claimId: string, flagIndex: number) => void;
   onAccept?: (claimId: string) => void;
   onSaveOverride?: (claimId: string, lines: EstimateLine[]) => void;
+  onViewConfidence?: () => void;
 };
 
 export function ClaimDetail({
@@ -63,6 +60,7 @@ export function ClaimDetail({
   onDismissFlag,
   onAccept,
   onSaveOverride,
+  onViewConfidence,
 }: Props) {
   const [overrideOpen, setOverrideOpen] = useState(false);
 
