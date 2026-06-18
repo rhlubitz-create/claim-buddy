@@ -199,8 +199,9 @@ export function ClaimDetail({
                             <Info className="size-3 text-muted-foreground cursor-help" />
                           </TooltipTrigger>
                           <TooltipContent side="top" className="max-w-xs">
-                            Pulled from the shop labor rate table by repair type. Editable as a
-                            lookup correction, not an AI estimate.
+                            Regional average labor rate for this repair type, based on a market
+                            survey of shops in the policyholder's area — not an AI estimate.
+                            Editable to match a specific shop's bid.
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -250,7 +251,7 @@ export function ClaimDetail({
                         override={line.override}
                         field="Labor rate"
                       />
-                      <div className="text-[10px] text-muted-foreground">from rate table</div>
+                      <div className="text-[10px] text-muted-foreground">regional avg</div>
                     </td>
                     <td className="py-3 px-4 text-right font-mono text-xs text-muted-foreground">
                       ${laborCostOf(line).toLocaleString()}
