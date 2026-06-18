@@ -251,7 +251,6 @@ export function ClaimDetail({
                         override={line.override}
                         field="Labor rate"
                       />
-                      <div className="text-[10px] text-muted-foreground">regional avg</div>
                     </td>
                     <td className="py-3 px-4 text-right font-mono text-xs text-muted-foreground">
                       ${laborCostOf(line).toLocaleString()}
