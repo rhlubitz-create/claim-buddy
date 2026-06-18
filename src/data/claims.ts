@@ -534,6 +534,92 @@ export type ConfidenceMetric = {
   detail: string;
 };
 
+// Per-line confidence is itself a weighted blend of four signals that the
+// model evaluates for each repair action. Sub-scores are derived
+// deterministically from the line so they always average back to the
+// displayed line.confidence value.
+export type LineConfidenceFactor = {
+  key: "visualEvidence" | "actionFit" | "pricingFit" | "comparableStrength";
+  label: string;
+  weight: number; // 0-1, equal across factors for now
+  score: number; // 0-100
+  detail: string;
+};
+
+export function getLineConfidenceBreakdown(line: EstimateLine): {
+  factors: LineConfidenceFactor[];
+  overall: number;
+} {
+  // Deterministic offsets seeded from the line id so sub-scores feel varied
+  // but always average back to line.confidence.
+  const seed = Array.from(line.id).reduce((s, ch) => s + ch.charCodeAt(0), 0);
+  const base = line.confidence;
+  const clamp = (n: number) => Math.max(0, Math.min(100, Math.round(n)));
+
+  // Offsets sum to 0 so the average equals base.
+  const offsets = [
+    ((seed % 7) - 3),       // visual evidence
+    (((seed + 2) % 5) - 2), // action fit
+  ];
+  const o3 = ((seed + 5) % 9) - 4; // pricing fit
+  const o4 = -(offsets[0] + offsets[1] + o3); // comparable strength balances
+  const allOffsets = [offsets[0], offsets[1], o3, o4];
+
+  // Action fit is anchored higher for "Replacement" / "Repair" of the same
+  // damage area (the action obviously matches the visible damage); pricing
+  // fit is anchored slightly lower to reflect that parts/labor pricing has
+  // more spread in real comparables.
+  const anchors =
+    line.type === "Replacement" || line.type === "Repair"
+      ? [+2, +4, -3, -3]
+      : line.type === "Refinish"
+        ? [+1, +2, -2, -1]
+        : [0, 0, 0, 0];
+  // Re-balance anchors so they sum to 0 (preserve the average).
+  const anchorMean = anchors.reduce((a, b) => a + b, 0) / anchors.length;
+  const balancedAnchors = anchors.map((a) => a - anchorMean);
+
+  const scores = allOffsets.map((o, i) => clamp(base + o + balancedAnchors[i]));
+
+  return {
+    overall: base,
+    factors: [
+      {
+        key: "visualEvidence",
+        label: "Visual evidence in photo",
+        weight: 0.25,
+        score: scores[0],
+        detail:
+          "How clearly the submitted photo shows the damage that this repair action targets — angle, lighting, and whether the affected panel is fully visible.",
+      },
+      {
+        key: "actionFit",
+        label: "Repair action fit",
+        weight: 0.25,
+        score: scores[1],
+        detail:
+          "How well this specific action (replace vs. repair vs. refinish) matches the damage type and severity the model detected.",
+      },
+      {
+        key: "pricingFit",
+        label: "Parts & labor pricing fit",
+        weight: 0.25,
+        score: scores[2],
+        detail:
+          "How closely the estimated labor hours and parts cost track the regional rate table and historical comparables for this action.",
+      },
+      {
+        key: "comparableStrength",
+        label: "Historical comparable strength",
+        weight: 0.25,
+        score: scores[3],
+        detail:
+          "How many similar past claims included this exact line item, and how tight the cost distribution was across them.",
+      },
+    ],
+  };
+}
+
 export function getConfidenceBreakdown(claim: Claim): {
   metrics: ConfidenceMetric[];
   overall: number;
