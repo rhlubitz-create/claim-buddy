@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import type { Claim, EstimateLine } from "@/data/claims";
+import type { Claim, EstimateLine, ConfidenceMetric } from "@/data/claims";
 import { getConfidenceBreakdown, lineTotal, laborCostOf } from "@/data/claims";
 import {
   AlertTriangle,
@@ -15,6 +15,11 @@ import {
   FileText,
   PencilLine,
   Bot,
+  Camera,
+  BarChart3,
+  ClipboardList,
+  ShieldAlert,
+  RefreshCw,
 } from "lucide-react";
 import { OverrideDialog } from "./OverrideDialog";
 import { toast } from "sonner";
@@ -385,48 +390,143 @@ export function ClaimDetail({
                           {overall}%
                         </button>
                       </PopoverTrigger>
-                      <PopoverContent align="end" className="w-96 text-xs space-y-3">
-                        <div>
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
-                            How this score is calculated
-                          </p>
-                          <p className="text-foreground/90 leading-relaxed">
-                            The overall confidence is a weighted blend of four equally-weighted
-                            signals (25% each). Weights are configurable by an admin.
-                          </p>
-                        </div>
-                        <ul className="space-y-2">
-                          {metrics.map((m) => (
-                            <li key={m.key} className="flex justify-between gap-3">
-                              <span className="text-foreground/90 flex-1">
-                                <span className="flex items-center gap-2">
-                                  <span className="font-semibold">{m.label}</span>
+                      <PopoverContent align="end" className="w-[28rem] p-0 overflow-hidden">
+                        <div className="p-4 space-y-4">
+                          {/* Header with donut */}
+                          <div className="flex items-start gap-4">
+                            <DonutChart score={overall} size={72} strokeWidth={7} />
+                            <div className="pt-1">
+                              <div className="text-2xl font-bold tracking-tight">{overall}%</div>
+                              <div className="text-sm font-medium text-foreground/80">
+                                {overall >= 80
+                                  ? "High confidence"
+                                  : overall >= 60
+                                    ? "Moderate confidence"
+                                    : "Low confidence"}
+                              </div>
+                              {claim.flags.length > 0 && (
+                                <div className="text-xs text-destructive mt-1">
+                                  Active flag is suppressing this score. Resolve mismatch to
+                                  reassess.
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Flag banner */}
+                          {claim.flags.length > 0 && (
+                            <div className="bg-warning/10 border border-warning/25 rounded-md p-3 text-xs">
+                              <div className="flex items-start gap-2">
+                                <AlertTriangle className="size-4 text-warning-foreground flex-shrink-0 mt-0.5" />
+                                <p className="text-foreground/90 leading-relaxed">
+                                  Claim consistency flag active. Reported severity (
+                                  {claim.accident.severity}) does not match photo evidence
+                                  (cosmetic). This signal is penalized — score would be{" "}
+                                  {Math.round(
+                                    metrics.reduce(
+                                      (s, m) =>
+                                        s +
+                                        (m.key === "claimConsistency" ? 85 : m.score) *
+                                          m.weight,
+                                      0,
+                                    ),
+                                  )}
+                                  % without this flag.
+                                </p>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Metrics */}
+                          <div className="space-y-3">
+                            {metrics.map((m) => (
+                              <div key={m.key} className="space-y-1">
+                                <div className="flex items-center justify-between gap-2">
+                                  <div className="flex items-center gap-2">
+                                    <MetricIcon
+                                      metricKey={m.key}
+                                      className="size-4 text-muted-foreground"
+                                    />
+                                    <span className="text-sm font-semibold text-foreground">
+                                      {m.label}
+                                    </span>
+                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono bg-muted text-muted-foreground">
+                                      {Math.round(m.weight * 100)}%
+                                    </span>
+                                  </div>
                                   <span
                                     className={cn(
-                                      "inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold",
-                                      confidencePillStyle(m.score),
+                                      "text-sm font-semibold",
+                                      m.score >= 80
+                                        ? "text-success"
+                                        : m.score >= 50
+                                          ? "text-warning-foreground"
+                                          : "text-destructive",
                                     )}
                                   >
                                     {m.score}%
                                   </span>
-                                </span>
-                                <span className="block text-muted-foreground text-[11px] mt-0.5">
+                                </div>
+                                <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                                  <div
+                                    className={cn(
+                                      "h-full rounded-full",
+                                      m.score >= 80
+                                        ? "bg-success"
+                                        : m.score >= 50
+                                          ? "bg-chart-1"
+                                          : "bg-destructive",
+                                    )}
+                                    style={{ width: `${m.score}%` }}
+                                  />
+                                </div>
+                                <p className="text-xs text-muted-foreground leading-relaxed">
                                   {m.detail}
-                                </span>
-                              </span>
-                              <span className="font-mono text-muted-foreground whitespace-nowrap">
-                                {Math.round(m.weight * 100)}%
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                        <p className="text-[11px] text-muted-foreground italic border-t border-border pt-2">
-                          Overall ={" "}
-                          {metrics
-                            .map((m) => `${m.score}×${Math.round(m.weight * 100)}%`)
-                            .join(" + ")}{" "}
-                          = <span className="font-semibold">{overall}%</span>
-                        </p>
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Weighted calculation */}
+                        <div className="bg-muted/50 border-t border-border p-4 space-y-2">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                            Weighted Calculation
+                          </p>
+                          <p className="text-xs font-mono text-foreground/80">
+                            {metrics
+                              .map((m) => `(${m.score} × ${Math.round(m.weight * 100)}%)`)
+                              .join(" + ")}
+                          </p>
+                          <p className="text-xs font-mono text-foreground/80">
+                            ={" "}
+                            {metrics
+                              .map((m) => (m.score * m.weight).toFixed(1))
+                              .join(" + ")} ={" "}
+                            {metrics
+                              .reduce((s, m) => s + m.score * m.weight, 0)
+                              .toFixed(1)}
+                            % →{" "}
+                            <span className="font-semibold text-foreground">
+                              rounded to {overall}%
+                            </span>
+                          </p>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="flex items-center justify-between px-4 py-2.5 border-t border-border bg-card text-[11px] text-muted-foreground">
+                          <span className="flex items-center gap-1.5">
+                            <RefreshCw className="size-3" />
+                            Recalculates on each agent action
+                          </span>
+                          <button
+                            type="button"
+                            className="text-primary hover:underline flex items-center gap-1"
+                          >
+                            <Info className="size-3" />
+                            Configure weights
+                          </button>
+                        </div>
                       </PopoverContent>
                     </Popover>
                   </td>
@@ -473,6 +573,85 @@ export function ClaimDetail({
       />
     </main>
   );
+}
+
+function DonutChart({
+  score,
+  size = 72,
+  strokeWidth = 7,
+}: {
+  score: number;
+  size?: number;
+  strokeWidth?: number;
+}) {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const dash = (score / 100) * circumference;
+  const color =
+    score >= 80
+      ? "var(--success)"
+      : score >= 50
+        ? "var(--chart-1)"
+        : "var(--destructive)";
+
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      className="flex-shrink-0"
+    >
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke="var(--border)"
+        strokeWidth={strokeWidth}
+      />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke={color}
+        strokeWidth={strokeWidth}
+        strokeDasharray={`${dash} ${circumference - dash}`}
+        strokeLinecap="round"
+        transform={`rotate(-90 ${size / 2} ${size / 2})`}
+      />
+      <text
+        x={size / 2}
+        y={size / 2}
+        dominantBaseline="middle"
+        textAnchor="middle"
+        style={{ fill: "var(--foreground)", fontSize: "13px", fontWeight: 700 }}
+      >
+        {score}%
+      </text>
+    </svg>
+  );
+}
+
+function MetricIcon({
+  metricKey,
+  className,
+}: {
+  metricKey: ConfidenceMetric["key"];
+  className?: string;
+}) {
+  switch (metricKey) {
+    case "photoCompleteness":
+      return <Camera className={className} />;
+    case "damageComplexity":
+      return <BarChart3 className={className} />;
+    case "repairScope":
+      return <ClipboardList className={className} />;
+    case "historicalMatch":
+      return <History className={className} />;
+    case "claimConsistency":
+      return <ShieldAlert className={className} />;
+  }
 }
 
 function EditedValueCell({
