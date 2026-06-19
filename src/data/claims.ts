@@ -227,7 +227,8 @@ export const CLAIMS: Claim[] = [
       lines: [
         {
           id: "l1",
-          action: "Headlamp Assembly (verify vehicle first)",
+          action: "Headlamp assembly",
+          damage: "verify vehicle first",
           type: "Replacement",
           laborHours: 1.2,
           laborRate: 95,
