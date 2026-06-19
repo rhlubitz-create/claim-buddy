@@ -33,8 +33,8 @@ type Props = {
 const LINE_TYPES: EstimateLine["type"][] = ["Replacement", "Repair", "Refinish", "Service", "Labor"];
 
 export function AddLineDialog({ open, onOpenChange, claimId, onAdd }: Props) {
-  const [action, setAction] = useState("");
   const [damage, setDamage] = useState("");
+  const [location, setLocation] = useState("");
   const [type, setType] = useState<EstimateLine["type"]>("Repair");
   const [hours, setHours] = useState("1.0");
   const [rate, setRate] = useState(LABOR_RATES["Repair"].toString());
@@ -50,8 +50,8 @@ export function AddLineDialog({ open, onOpenChange, claimId, onAdd }: Props) {
   };
 
   const reset = () => {
-    setAction("");
     setDamage("");
+    setLocation("");
     setType("Repair");
     setHours("1.0");
     setRate(LABOR_RATES["Repair"].toString());
@@ -61,19 +61,23 @@ export function AddLineDialog({ open, onOpenChange, claimId, onAdd }: Props) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!action.trim()) {
-      toast.error("Damage + repair action name is required.");
+    if (!damage.trim()) {
+      toast.error("Damage is required.");
+      return;
+    }
+    if (!location.trim()) {
+      toast.error("Location is required.");
       return;
     }
     if (!rationale.trim()) {
-      toast.error("Rationale is required when adding a damage + repair action.");
+      toast.error("Rationale is required when adding a damage detail.");
       return;
     }
 
     const line: EstimateLine = {
       id: `l-agent-${Date.now()}`,
-      action: action.trim(),
-      damage: damage.trim() || undefined,
+      action: location.trim(),
+      damage: damage.trim(),
       type,
       laborHours: parseFloat(hours) || 0,
       laborRate: parseFloat(rate) || 0,
@@ -92,8 +96,8 @@ export function AddLineDialog({ open, onOpenChange, claimId, onAdd }: Props) {
     };
 
     onAdd?.(line, rationale.trim());
-    toast.success(`Damage + repair action added to ${claimId}`, {
-      description: `${line.action} — $${total.toLocaleString()} total.`,
+    toast.success(`Damage added to ${claimId}`, {
+      description: `${line.damage} — ${line.action} — $${total.toLocaleString()} total.`,
     });
     reset();
     onOpenChange(false);
@@ -105,7 +109,7 @@ export function AddLineDialog({ open, onOpenChange, claimId, onAdd }: Props) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Plus className="size-4" />
-            Add damage + repair action
+            Add damage
           </DialogTitle>
           <DialogDescription>
             Add a missing damage finding and repair action to the AI estimate. Labor cost is calculated as hours × rate.
