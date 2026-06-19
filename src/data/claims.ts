@@ -523,26 +523,18 @@ export function generateEstimateForNewClaim(severity: Severity): Claim["estimate
   };
 }
 
-// Five equally-weighted signals (20% each) that the AI confidence pill
-// surfaces. Admins could re-weight these in the future, but for now they are
-// equal. Values are derived from each claim's photo / line items / historical
-// comparables so demo numbers stay internally consistent.
-export type ConfidenceMetric = {
-  key: "photoCompleteness" | "damageComplexity" | "repairScope" | "historicalMatch" | "claimConsistency";
-  label: string;
-  weight: number; // 0-1
-  score: number; // 0-100
-  detail: string;
-};
-
-// Per-line confidence is itself a weighted blend of four signals that the
-// model evaluates for each repair action. Sub-scores are derived
+// Per-line confidence is the simple average of four non-overlapping signals
+// the model evaluates for each repair action. Sub-scores are derived
 // deterministically from the line so they always average back to the
 // displayed line.confidence value.
 export type LineConfidenceFactor = {
-  key: "visualEvidence" | "actionFit" | "pricingFit" | "comparableStrength";
+  key:
+    | "damageClassification"
+    | "photoSufficiency"
+    | "costPrecision"
+    | "comparableStrength";
   label: string;
-  weight: number; // 0-1, equal across factors for now
+  weight: number; // 0-1, equal at 0.25 across all four factors
   score: number; // 0-100
   detail: string;
 };
