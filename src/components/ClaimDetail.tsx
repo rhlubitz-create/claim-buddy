@@ -402,7 +402,7 @@ export function ClaimDetail({
                     </td>
 
                     <td className="py-3 px-4 text-right font-mono font-medium">
-                      {line.overridden && line.override ? (
+                      {line.overridden && line.override && !line.addedByAgent ? (
                         <Popover>
                           <PopoverTrigger asChild>
                             <button
