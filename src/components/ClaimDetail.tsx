@@ -14,6 +14,7 @@ import {
   ArrowRight,
   Plus,
   XCircle,
+  ImageIcon,
 } from "lucide-react";
 import { OverrideDialog } from "./OverrideDialog";
 import { AddLineDialog } from "./AddLineDialog";
