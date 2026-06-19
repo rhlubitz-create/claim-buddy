@@ -16,6 +16,7 @@ export type MismatchFlag = {
 export type EstimateLine = {
   id: string;
   action: string;
+  damage?: string; // visible damage descriptor (e.g. "dent", "cracked", "paint damage")
   type: "Replacement" | "Repair" | "Refinish" | "Service" | "Labor";
   laborHours: number;
   laborRate: number; // $/hr — looked up from LABOR_RATES by type, editable as a correction
