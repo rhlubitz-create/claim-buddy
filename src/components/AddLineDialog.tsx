@@ -38,7 +38,6 @@ export function AddLineDialog({ open, onOpenChange, claimId, onAdd }: Props) {
   const [hours, setHours] = useState("1.0");
   const [rate, setRate] = useState(LABOR_RATES["Repair"].toString());
   const [parts, setParts] = useState("0");
-  const [confidence, setConfidence] = useState("75");
   const [rationale, setRationale] = useState("");
 
   const laborCost = Math.round((parseFloat(hours) || 0) * (parseFloat(rate) || 0));
@@ -55,7 +54,6 @@ export function AddLineDialog({ open, onOpenChange, claimId, onAdd }: Props) {
     setHours("1.0");
     setRate(LABOR_RATES["Repair"].toString());
     setParts("0");
-    setConfidence("75");
     setRationale("");
   };
 
@@ -77,7 +75,7 @@ export function AddLineDialog({ open, onOpenChange, claimId, onAdd }: Props) {
       laborHours: parseFloat(hours) || 0,
       laborRate: parseFloat(rate) || 0,
       partsCost: parseFloat(parts) || 0,
-      confidence: parseInt(confidence, 10) || 75,
+      confidence: 0,
       overridden: true,
       addedByAgent: true,
       override: {
@@ -125,46 +123,22 @@ export function AddLineDialog({ open, onOpenChange, claimId, onAdd }: Props) {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="type" className="text-xs font-semibold uppercase tracking-wider">
-                Type
-              </Label>
-              <Select value={type} onValueChange={(v) => handleTypeChange(v as EstimateLine["type"])}>
-                <SelectTrigger id="type">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {LINE_TYPES.map((t) => (
-                    <SelectItem key={t} value={t}>
-                      {t}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="confidence" className="text-xs font-semibold uppercase tracking-wider">
-                Confidence (%)
-              </Label>
-              <div className="relative">
-                <Input
-                  id="confidence"
-                  type="number"
-                  min="0"
-                  max="100"
-                  step="1"
-                  value={confidence}
-                  onChange={(e) => setConfidence(e.target.value)}
-                  className="pr-6 font-mono text-right"
-                  required
-                />
-                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
-                  %
-                </span>
-              </div>
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="type" className="text-xs font-semibold uppercase tracking-wider">
+              Type
+            </Label>
+            <Select value={type} onValueChange={(v) => handleTypeChange(v as EstimateLine["type"])}>
+              <SelectTrigger id="type">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {LINE_TYPES.map((t) => (
+                  <SelectItem key={t} value={t}>
+                    {t}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="grid grid-cols-3 gap-4">
