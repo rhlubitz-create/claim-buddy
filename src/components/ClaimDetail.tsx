@@ -109,44 +109,47 @@ export function ClaimDetail({
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
         {/* Section 1: Policyholder + Claim Info + Flags */}
         <section className="space-y-4">
-          <h2 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-            Policyholder & Claim Information
-          </h2>
+          <div className="bg-muted/30 border border-border rounded-lg p-5 shadow-sm space-y-4">
+            <h2 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              Policyholder & Claim Information
+            </h2>
 
-          <div className="grid grid-cols-[1.4fr_1fr] gap-6">
-            <img
-              src={claim.photo}
-              alt={`Damage photo for ${claim.id}`}
-              loading="lazy"
-              width={1024}
-              height={640}
-              className="w-full aspect-[16/10] object-cover rounded-sm outline-1 -outline-offset-1 outline-black/5 bg-secondary"
-            />
-            <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-xs content-start">
-              <Field label="User ID" value={claim.policyholder.userId} mono />
-              <Field label="Policyholder" value={claim.policyholder.name} />
-              <Field label="Policy #" value={claim.policyholder.policyNumber} mono />
-              <Field label="Coverage" value={claim.policyholder.coverage} />
-              <Field
-                label="Vehicle"
-                value={`${claim.vehicle.year} ${claim.vehicle.make} ${claim.vehicle.model}`}
+            <div className="grid grid-cols-[1.4fr_1fr] gap-6">
+              <img
+                src={claim.photo}
+                alt={`Damage photo for ${claim.id}`}
+                loading="lazy"
+                width={1024}
+                height={640}
+                className="w-full aspect-[16/10] object-cover rounded-sm outline-1 -outline-offset-1 outline-black/5 bg-secondary"
               />
-              <Field label="VIN" value={claim.vehicle.vin} mono />
-              <Field label="Accident Type" value={claim.accident.type} />
-              <Field label="Damage Location" value={claim.accident.damageLocation} />
-              <Field label="Damage Type" value={claim.accident.damageType} />
-              <Field label="Severity" value={claim.accident.severity} />
-              <div className="col-span-2">
-                <dt className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
-                  Description
-                </dt>
-                <dd className="text-foreground/90 leading-relaxed">
-                  {claim.accident.description}
-                </dd>
-              </div>
-            </dl>
+              <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-xs content-start">
+                <Field label="User ID" value={claim.policyholder.userId} mono />
+                <Field label="Policyholder" value={claim.policyholder.name} />
+                <Field label="Policy #" value={claim.policyholder.policyNumber} mono />
+                <Field label="Coverage" value={claim.policyholder.coverage} />
+                <Field
+                  label="Vehicle"
+                  value={`${claim.vehicle.year} ${claim.vehicle.make} ${claim.vehicle.model}`}
+                />
+                <Field label="VIN" value={claim.vehicle.vin} mono />
+                <Field label="Accident Type" value={claim.accident.type} />
+                <Field label="Damage Location" value={claim.accident.damageLocation} />
+                <Field label="Damage Type" value={claim.accident.damageType} />
+                <Field label="Severity" value={claim.accident.severity} />
+                <div className="col-span-2">
+                  <dt className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+                    Description
+                  </dt>
+                  <dd className="text-foreground/90 leading-relaxed">
+                    {claim.accident.description}
+                  </dd>
+                </div>
+              </dl>
+            </div>
           </div>
         </section>
+
 
         {/* Section 1.5: Damage Assessment Summary + Flags */}
         <section className="space-y-3 rounded-md border border-border bg-secondary/40 p-4">
