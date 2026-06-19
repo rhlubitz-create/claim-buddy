@@ -65,7 +65,8 @@ export type AuditEntry = {
     | "flag_reviewed"
     | "override_saved"
     | "line_added"
-    | "claim_accepted";
+    | "claim_accepted"
+    | "claim_rejected";
   summary: string;
   detail?: string;
 };

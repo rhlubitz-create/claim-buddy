@@ -137,6 +137,18 @@ function Index() {
     });
   };
 
+  const handleReject = (id: string, rationale: string) => {
+    // Rationale is logged for audit purposes; in a real backend this would
+    // persist to the claim record before removal. For the demo, we surface
+    // it in the console so reviewers can verify capture.
+    console.info(`[Audit] Claim ${id} rejected by Alex Park (Claims Agent): ${rationale}`);
+    setClaims((prev) => {
+      const next = prev.filter((c) => c.id !== id);
+      if (id === selectedId && next.length) setSelectedId(next[0].id);
+      return next;
+    });
+  };
+
   const handleSaveOverride = (
     id: string,
     updatedLines: EstimateLine[],
@@ -251,6 +263,7 @@ function Index() {
                 onOpenRail={() => setRailOpen(true)}
                 onDismissFlag={handleDismissFlag}
                 onAccept={handleAccept}
+                onReject={handleReject}
                 onSaveOverride={handleSaveOverride}
                 onAddLine={handleAddLine}
                 onViewConfidence={() => setView("confidence")}
