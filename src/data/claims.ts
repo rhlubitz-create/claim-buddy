@@ -375,9 +375,9 @@ export function generateEstimateForNewClaim(severity: Severity): Claim["estimate
       summary:
         "Moderate cosmetic and minor structural damage. Dent repair, bumper blend, and partial refinish recommended.",
       lines: [
-        { id: "l1", action: "Dent Repair", type: "Repair", laborHours: 2.5, laborRate: 145, partsCost: 80, confidence: 88 },
-        { id: "l2", action: "Bumper Corner Blend", type: "Refinish", laborHours: 2.0, laborRate: 120, partsCost: 140, confidence: 79 },
-        { id: "l3", action: "Paint & Refinish (partial)", type: "Refinish", laborHours: 2.5, laborRate: 120, partsCost: 130, confidence: 76 },
+        { id: "l1", action: "Dent repair", damage: "dent", type: "Repair", laborHours: 2.5, laborRate: 145, partsCost: 80, confidence: 88 },
+        { id: "l2", action: "Bumper corner", damage: "blend", type: "Refinish", laborHours: 2.0, laborRate: 120, partsCost: 140, confidence: 79 },
+        { id: "l3", action: "Partial refinish", damage: "paint damage", type: "Refinish", laborHours: 2.5, laborRate: 120, partsCost: 130, confidence: 76 },
       ],
     };
   }
@@ -386,8 +386,8 @@ export function generateEstimateForNewClaim(severity: Severity): Claim["estimate
     summary:
       "Minor cosmetic damage. Paintless dent repair and spot refinish should restore the affected area.",
     lines: [
-      { id: "l1", action: "Paintless Dent Repair", type: "Repair", laborHours: 1.2, laborRate: 145, partsCost: 0, confidence: 93 },
-      { id: "l2", action: "Spot Refinish", type: "Refinish", laborHours: 1.0, laborRate: 120, partsCost: 60, confidence: 89 },
+      { id: "l1", action: "Panel", damage: "dent", type: "Repair", laborHours: 1.2, laborRate: 145, partsCost: 0, confidence: 93 },
+      { id: "l2", action: "Spot finish", damage: "paint damage", type: "Refinish", laborHours: 1.0, laborRate: 120, partsCost: 60, confidence: 89 },
     ],
   };
 }
