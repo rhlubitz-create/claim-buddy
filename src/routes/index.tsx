@@ -252,6 +252,7 @@ function Index() {
                 onDismissFlag={handleDismissFlag}
                 onAccept={handleAccept}
                 onSaveOverride={handleSaveOverride}
+                onAddLine={handleAddLine}
                 onViewConfidence={() => setView("confidence")}
               />
               {railOpen && (
