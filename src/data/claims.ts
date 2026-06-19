@@ -144,7 +144,8 @@ export const CLAIMS: Claim[] = [
       lines: [
         {
           id: "l1",
-          action: "Rear Quarter Panel Dent Repair",
+          action: "Rear quarter panel",
+          damage: "dent",
           type: "Repair",
           laborHours: 2.2,
           laborRate: 145,
@@ -153,7 +154,8 @@ export const CLAIMS: Claim[] = [
         },
         {
           id: "l2",
-          action: "Taillamp Housing Inspection",
+          action: "Taillamp housing",
+          damage: "cracked",
           type: "Repair",
           laborHours: 0.6,
           laborRate: 145,
@@ -162,7 +164,8 @@ export const CLAIMS: Claim[] = [
         },
         {
           id: "l3",
-          action: "Paint & Refinish (Metallic Pearl)",
+          action: "Rear panel finish",
+          damage: "paint damage",
           type: "Refinish",
           laborHours: 3.5,
           laborRate: 120,
