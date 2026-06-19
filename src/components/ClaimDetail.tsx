@@ -62,9 +62,11 @@ export function ClaimDetail({
   onDismissFlag,
   onAccept,
   onSaveOverride,
+  onAddLine,
   onViewConfidence,
 }: Props) {
   const [overrideOpen, setOverrideOpen] = useState(false);
+  const [addLineOpen, setAddLineOpen] = useState(false);
 
   const total = claim.estimate.lines.reduce((sum, l) => sum + lineTotal(l), 0);
   const laborTotal = claim.estimate.lines.reduce((s, l) => s + laborCostOf(l), 0);
