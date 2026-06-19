@@ -64,6 +64,7 @@ export type AuditEntry = {
     | "ai_estimate_generated"
     | "flag_reviewed"
     | "override_saved"
+    | "line_added"
     | "claim_accepted";
   summary: string;
   detail?: string;
