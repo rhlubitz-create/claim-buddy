@@ -71,7 +71,8 @@ export function ClaimDetail({
   const total = claim.estimate.lines.reduce((sum, l) => sum + lineTotal(l), 0);
   const laborTotal = claim.estimate.lines.reduce((s, l) => s + laborCostOf(l), 0);
   const partsTotal = claim.estimate.lines.reduce((s, l) => s + l.partsCost, 0);
-  const { metrics, overall } = getConfidenceBreakdown(claim);
+  const { overall, rolledUp, multiplier, multiplierLabel } =
+    getConfidenceBreakdown(claim);
 
   return (
     <main className="flex-1 flex flex-col bg-card overflow-hidden relative min-w-0">
