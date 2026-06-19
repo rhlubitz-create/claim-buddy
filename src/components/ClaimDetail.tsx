@@ -337,6 +337,7 @@ export function ClaimDetail({
                       <EditedValueCell
                         edited={
                           !!line.overridden &&
+                          !line.addedByAgent &&
                           !!line.override &&
                           line.override.previousLaborHours !== line.laborHours
                         }
@@ -354,6 +355,7 @@ export function ClaimDetail({
                       <EditedValueCell
                         edited={
                           !!line.overridden &&
+                          !line.addedByAgent &&
                           !!line.override &&
                           line.override.previousLaborRate !== line.laborRate
                         }
@@ -378,6 +380,7 @@ export function ClaimDetail({
                         <EditedValueCell
                           edited={
                             !!line.overridden &&
+                            !line.addedByAgent &&
                             !!line.override &&
                             line.override.previousPartsCost !== line.partsCost
                           }
