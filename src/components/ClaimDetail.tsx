@@ -540,6 +540,76 @@ function DonutChart({
   );
 }
 
+function LineConfidencePopover({ line }: { line: EstimateLine }) {
+  const lb = getLineConfidenceBreakdown(line);
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          className={cn(
+            "inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-semibold ring-1 transition-colors",
+            confidencePillStyle(line.confidence),
+          )}
+          title="How is this confidence calculated?"
+        >
+          <Info className="size-3" />
+          {line.confidence}%
+        </button>
+      </PopoverTrigger>
+      <PopoverContent side="top" align="center" className="w-72 p-0 overflow-hidden">
+        <div className="p-4 space-y-3">
+          <div className="flex items-center gap-3">
+            <DonutChart score={line.confidence} size={56} strokeWidth={6} />
+            <div>
+              <div className="text-xl font-bold tracking-tight leading-none">
+                {line.confidence}%
+              </div>
+              <div className="text-xs font-medium text-foreground/80 mt-1">
+                {line.confidence >= 80
+                  ? "High confidence"
+                  : line.confidence >= 60
+                    ? "Moderate confidence"
+                    : "Low confidence"}
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Weighted blend of 4 equally-weighted signals (25% each) scored per repair action.
+          </p>
+          <div className="space-y-2">
+            {lb.factors.map((f) => (
+              <div key={f.key} className="space-y-1">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[11px] font-medium">{f.label}</span>
+                  <span className="text-[11px] font-mono tabular-nums text-muted-foreground">
+                    {f.score}%
+                  </span>
+                </div>
+                <div className="h-1.5 rounded bg-muted overflow-hidden">
+                  <div
+                    className={cn(
+                      "h-full",
+                      f.score >= 85
+                        ? "bg-success"
+                        : f.score >= 70
+                          ? "bg-warning"
+                          : "bg-destructive",
+                    )}
+                    style={{ width: `${f.score}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="text-[10px] font-mono text-muted-foreground bg-muted/30 px-3 py-2 rounded">
+            Avg: ({lb.factors.map((f) => f.score).join(" + ")}) ÷ 4 = {line.confidence}%
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 function EditedValueCell({
   edited,
   current,
