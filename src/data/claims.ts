@@ -309,26 +309,19 @@ export const POLICYHOLDERS: Record<string, PolicyholderRecord> = {
     coverage: "Premium Comprehensive",
     vehicle: { make: "Tesla", model: "Model 3", year: 2022, vin: "5YJ3E1EA6NF40XXXX" },
   },
-  "881-44-201": {
-    userId: "881-44-201",
-    name: "Elena Rossi",
-    policyNumber: "P-88410029",
-    coverage: "Comprehensive + Vandalism",
-    vehicle: { make: "Fiat", model: "Cinquecento", year: 1995, vin: "ZFA17000000XXXXXX" },
+  "859-01-440": {
+    userId: "859-01-440",
+    name: "David Okonkwo",
+    policyNumber: "P-85900118",
+    coverage: "Standard Collision",
+    vehicle: { make: "Toyota", model: "Camry", year: 2019, vin: "4T1B11HK9KUXXXXXX" },
   },
-  "871-22-918": {
-    userId: "871-22-918",
-    name: "Julian Chen",
-    policyNumber: "P-87120118",
-    coverage: "Standard Comprehensive",
-    vehicle: { make: "Audi", model: "RS5", year: 2022, vin: "WUAPWAF55NA0XXXXX" },
-  },
-  "865-77-303": {
-    userId: "865-77-303",
-    name: "Priya Sharma",
-    policyNumber: "P-86540077",
-    coverage: "Premium Comprehensive",
-    vehicle: { make: "Mercedes-Benz", model: "GLE 350", year: 2020, vin: "4JGDA5HB1LA0XXXXX" },
+  "850-12-007": {
+    userId: "850-12-007",
+    name: "Robert Hayes",
+    policyNumber: "P-85010044",
+    coverage: "Liability Only",
+    vehicle: { make: "Subaru", model: "Outback", year: 2017, vin: "4S4BSANC7H30XXXXX" },
   },
 };
 
