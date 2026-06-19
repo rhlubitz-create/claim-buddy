@@ -62,17 +62,18 @@ export function AddLineDialog({ open, onOpenChange, claimId, onAdd }: Props) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!action.trim()) {
-      toast.error("Repair action name is required.");
+      toast.error("Damage + repair action name is required.");
       return;
     }
     if (!rationale.trim()) {
-      toast.error("Rationale is required when adding a repair action.");
+      toast.error("Rationale is required when adding a damage + repair action.");
       return;
     }
 
     const line: EstimateLine = {
       id: `l-agent-${Date.now()}`,
       action: action.trim(),
+      damage: damage.trim() || undefined,
       type,
       laborHours: parseFloat(hours) || 0,
       laborRate: parseFloat(rate) || 0,
@@ -91,7 +92,7 @@ export function AddLineDialog({ open, onOpenChange, claimId, onAdd }: Props) {
     };
 
     onAdd?.(line, rationale.trim());
-    toast.success(`Repair action added to ${claimId}`, {
+    toast.success(`Damage + repair action added to ${claimId}`, {
       description: `${line.action} — $${total.toLocaleString()} total.`,
     });
     reset();
