@@ -278,7 +278,8 @@ CLAIMS.push({
     lines: [
       {
         id: "l1",
-        action: "Coverage review — not covered under Liability Only policy",
+        action: "Coverage review",
+        damage: "not covered under Liability Only policy",
         type: "Service",
         laborHours: 0,
         laborRate: 180,
