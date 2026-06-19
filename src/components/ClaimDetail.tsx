@@ -164,18 +164,51 @@ export function ClaimDetail({
           </p>
 
           <div className="space-y-1.5">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              Detected:
-            </span>
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                Detected:
+              </span>
+              <TooltipProvider delayDuration={150}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={() => setAddLineOpen(true)}
+                      aria-label="Add repair action"
+                      className="inline-flex items-center justify-center size-6 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                    >
+                      <Plus className="size-3.5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="left">
+                    Add a repair action the AI missed
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <div className="flex flex-wrap gap-2">
               {claim.estimate.lines.map((line) => (
                 <span
                   key={line.id}
-                  className="inline-flex items-center px-2.5 py-1 rounded-md bg-background border border-border text-xs text-foreground/90 shadow-sm"
+                  className={cn(
+                    "inline-flex items-center px-2.5 py-1 rounded-md text-xs shadow-sm",
+                    line.addedByAgent
+                      ? "bg-warning/15 text-warning-foreground ring-1 ring-warning/40 border border-warning/30"
+                      : "bg-background border border-border text-foreground/90",
+                  )}
+                  title={line.addedByAgent ? "Added by claims agent" : undefined}
                 >
+                  {line.addedByAgent && (
+                    <PencilLine className="size-2.5 mr-1" />
+                  )}
                   <span className="font-medium">{line.action}</span>
                   <span className="mx-1.5 text-muted-foreground">—</span>
                   <span className="text-muted-foreground">{line.type}</span>
+                  {line.addedByAgent && (
+                    <span className="ml-1.5 text-[9px] font-bold uppercase tracking-widest opacity-80">
+                      Added
+                    </span>
+                  )}
                 </span>
               ))}
             </div>
@@ -261,13 +294,50 @@ export function ClaimDetail({
               </thead>
               <tbody className="divide-y divide-border/60">
                 {claim.estimate.lines.map((line) => (
-                  <tr key={line.id} className="text-sm">
-                    <td className="py-3 px-4">{line.action}</td>
+                  <tr
+                    key={line.id}
+                    className={cn(
+                      "text-sm",
+                      line.addedByAgent && "bg-warning/[0.06]",
+                    )}
+                  >
+                    <td
+                      className={cn(
+                        "py-3 px-4",
+                        line.addedByAgent &&
+                          "border-l-2 border-warning/60",
+                      )}
+                    >
+                      <span className="inline-flex items-center gap-1.5">
+                        {line.action}
+                        {line.addedByAgent && (
+                          <TooltipProvider delayDuration={150}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-warning/20 text-warning-foreground ring-1 ring-warning/40 text-[9px] font-bold uppercase tracking-widest cursor-help">
+                                  <PencilLine className="size-2.5" />
+                                  Added
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="max-w-xs">
+                                Added by {line.override?.by ?? "claims agent"}.
+                                {line.override?.rationale && (
+                                  <span className="block italic mt-1">
+                                    "{line.override.rationale}"
+                                  </span>
+                                )}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                      </span>
+                    </td>
                     <td className="py-3 px-4 text-muted-foreground text-xs">{line.type}</td>
                     <td className="py-3 px-4 text-right font-mono text-xs">
                       <EditedValueCell
                         edited={
                           !!line.overridden &&
+                          !line.addedByAgent &&
                           !!line.override &&
                           line.override.previousLaborHours !== line.laborHours
                         }
@@ -285,6 +355,7 @@ export function ClaimDetail({
                       <EditedValueCell
                         edited={
                           !!line.overridden &&
+                          !line.addedByAgent &&
                           !!line.override &&
                           line.override.previousLaborRate !== line.laborRate
                         }
@@ -309,6 +380,7 @@ export function ClaimDetail({
                         <EditedValueCell
                           edited={
                             !!line.overridden &&
+                            !line.addedByAgent &&
                             !!line.override &&
                             line.override.previousPartsCost !== line.partsCost
                           }
@@ -330,7 +402,7 @@ export function ClaimDetail({
                     </td>
 
                     <td className="py-3 px-4 text-right font-mono font-medium">
-                      {line.overridden && line.override ? (
+                      {line.overridden && line.override && !line.addedByAgent ? (
                         <Popover>
                           <PopoverTrigger asChild>
                             <button
@@ -482,16 +554,7 @@ export function ClaimDetail({
           </div>
 
           {/* Action buttons inline with AI estimate section */}
-          <div className="flex justify-between items-center gap-2 pt-1">
-            <button
-              type="button"
-              onClick={() => setAddLineOpen(true)}
-              className="text-xs flex items-center gap-1.5 px-3 py-2 rounded-sm border border-dashed border-border hover:border-primary/40 hover:bg-primary/[0.04] text-muted-foreground hover:text-primary transition-colors"
-            >
-              <Plus className="size-3.5" />
-              Add repair action
-            </button>
-            <div className="flex items-center gap-2">
+          <div className="flex justify-end items-center gap-2 pt-1">
               <button
                 onClick={() => setRejectOpen(true)}
                 className="px-4 py-2 text-sm border border-destructive/30 bg-card rounded-sm hover:bg-destructive/10 transition-colors text-destructive flex items-center gap-1.5"
@@ -518,7 +581,6 @@ export function ClaimDetail({
                 <Send className="size-3.5" />
                 Accept / Send for Review
               </button>
-            </div>
           </div>
         </section>
 
