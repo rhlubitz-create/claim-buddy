@@ -529,15 +529,16 @@ export function getConfidenceBreakdown(
   claim: Claim,
 ): ClaimConfidenceBreakdown {
   const lines = claim.estimate.lines;
-  const rolledUp = lines.length
-    ? Math.round(lines.reduce((s, l) => s + l.confidence, 0) / lines.length)
+  const aiLines = lines.filter((l) => !l.addedByAgent);
+  const rolledUp = aiLines.length
+    ? Math.round(aiLines.reduce((s, l) => s + l.confidence, 0) / aiLines.length)
     : 0;
   const { multiplier, label, detail } = consistencyMultiplierFor(claim.flags);
   const overall = Math.round(rolledUp * multiplier);
 
   return {
     rolledUp,
-    lineContribs: lines.map((l) => ({
+    lineContribs: aiLines.map((l) => ({
       id: l.id,
       action: l.action,
       confidence: l.confidence,
