@@ -470,17 +470,17 @@ export function ClaimDetail({
             </button>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setOverrideOpen(true)}
-                className="px-4 py-2 text-sm border border-border bg-card rounded-sm hover:bg-secondary transition-colors text-foreground/80"
-              >
-                Override Estimate
-              </button>
-              <button
                 onClick={() => setRejectOpen(true)}
                 className="px-4 py-2 text-sm border border-destructive/30 bg-card rounded-sm hover:bg-destructive/10 transition-colors text-destructive flex items-center gap-1.5"
               >
                 <XCircle className="size-3.5" />
                 Reject Claim
+              </button>
+              <button
+                onClick={() => setOverrideOpen(true)}
+                className="px-4 py-2 text-sm border border-border bg-card rounded-sm hover:bg-secondary transition-colors text-foreground/80"
+              >
+                Override Estimate
               </button>
               <button
                 onClick={() => {
