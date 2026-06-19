@@ -14,6 +14,7 @@ import {
   ArrowRight,
   Plus,
   XCircle,
+  Image as ImageIcon,
 } from "lucide-react";
 import { OverrideDialog } from "./OverrideDialog";
 import { AddLineDialog } from "./AddLineDialog";
@@ -151,80 +152,94 @@ export function ClaimDetail({
         </section>
 
 
-        {/* Section 1.5: Damage Assessment Summary + Flags */}
-        <section className="space-y-3 rounded-md border border-border bg-secondary/40 p-4">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-foreground/5 text-foreground text-xs font-bold uppercase tracking-wider ring-1 ring-foreground/10">
-              <Sparkles className="size-3.5" />
-              Damage Assessment Summary
-            </span>
+        {/* Section 1.5: Damage findings */}
+        <section className="rounded-md border border-border bg-secondary/30 p-4 space-y-4">
+          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+            <ImageIcon className="size-4 text-muted-foreground" />
+            <span>Damage findings — from photo evidence</span>
           </div>
+
           <p className="text-sm text-foreground/90 leading-relaxed">
             {claim.estimate.summary}
           </p>
 
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                Detected:
-              </span>
-              <TooltipProvider delayDuration={150}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      type="button"
-                      onClick={() => setAddLineOpen(true)}
-                      aria-label="Add repair action"
-                      className="inline-flex items-center justify-center size-6 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-                    >
-                      <Plus className="size-3.5" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="left">
-                    Add a repair action the AI missed
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-            <div className="flex flex-wrap gap-2">
+          <div className="space-y-3">
+            <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              Findings
+            </h3>
+            <div className="space-y-2">
               {claim.estimate.lines.map((line) => (
-                <span
+                <div
                   key={line.id}
                   className={cn(
-                    "inline-flex items-center px-2.5 py-1 rounded-md text-xs shadow-sm",
-                    line.addedByAgent
-                      ? "bg-warning/15 text-warning-foreground ring-1 ring-warning/40 border border-warning/30"
-                      : "bg-background border border-border text-foreground/90",
+                    "flex items-center justify-between p-3 rounded-md bg-background border border-border",
+                    line.addedByAgent && "bg-warning/[0.04] border-warning/30",
                   )}
-                  title={line.addedByAgent ? "Added by claims agent" : undefined}
                 >
-                  {line.addedByAgent && (
-                    <PencilLine className="size-2.5 mr-1" />
-                  )}
-                  <span className="font-medium">{line.action}</span>
-                  <span className="mx-1.5 text-muted-foreground">—</span>
-                  <span className="text-muted-foreground">{line.type}</span>
-                  {line.addedByAgent && (
-                    <span className="ml-1.5 text-[9px] font-bold uppercase tracking-widest opacity-80">
-                      Added
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span
+                      className={cn(
+                        "inline-flex items-center justify-center size-8 rounded-md bg-muted border border-border flex-shrink-0",
+                        line.addedByAgent && "bg-warning/15 border-warning/30",
+                      )}
+                    >
+                      {line.addedByAgent ? (
+                        <PencilLine className="size-3.5 text-warning-foreground" />
+                      ) : (
+                        <ImageIcon className="size-3.5 text-muted-foreground" />
+                      )}
                     </span>
-                  )}
-                </span>
+                    <div className="flex items-center gap-1.5 text-sm min-w-0">
+                      <span className="font-medium truncate">{line.action}</span>
+                      <span className="text-muted-foreground">—</span>
+                      <span className="text-muted-foreground truncate">
+                        {line.damage ?? line.type}
+                      </span>
+                      {line.addedByAgent && (
+                        <span className="ml-1.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-warning/20 text-warning-foreground text-[9px] font-bold uppercase tracking-widest flex-shrink-0">
+                          Added
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0 ml-3">
+                    <ImageIcon className="size-3" />
+                    1 photo
+                  </span>
+                </div>
               ))}
             </div>
           </div>
+
+          <TooltipProvider delayDuration={150}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => setAddLineOpen(true)}
+                  className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors"
+                >
+                  <Plus className="size-3.5" />
+                  Add damage + repair action
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                Add a damage finding and repair action the AI missed
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
 
           {claim.flags.length > 0 ? (
             <div className="space-y-2 pt-1">
               {claim.flags.map((f, i) => (
                 <div
                   key={i}
-                  className="flex items-start gap-3 p-3 rounded-sm bg-destructive/5 border border-destructive/20"
+                  className="flex items-start gap-3 p-4 rounded-md bg-destructive/5 border border-destructive/20"
                 >
                   <AlertTriangle className="size-4 text-destructive flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-destructive">{f.title}</p>
-                    <p className="text-xs text-foreground/80 mt-0.5">{f.detail}</p>
+                    <p className="text-xs text-foreground/80 mt-1 leading-relaxed">{f.detail}</p>
                   </div>
                   {onDismissFlag && (
                     <button
@@ -244,7 +259,7 @@ export function ClaimDetail({
               ))}
             </div>
           ) : (
-            <div className="flex items-center gap-2 p-2.5 rounded-sm bg-success/5 border border-success/20">
+            <div className="flex items-center gap-2 p-3 rounded-md bg-success/5 border border-success/20">
               <CheckCircle2 className="size-4 text-success flex-shrink-0" />
               <p className="text-xs text-foreground/80">
                 No mismatches detected. Photo, vehicle, and severity classification align.

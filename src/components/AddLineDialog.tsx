@@ -34,6 +34,7 @@ const LINE_TYPES: EstimateLine["type"][] = ["Replacement", "Repair", "Refinish",
 
 export function AddLineDialog({ open, onOpenChange, claimId, onAdd }: Props) {
   const [action, setAction] = useState("");
+  const [damage, setDamage] = useState("");
   const [type, setType] = useState<EstimateLine["type"]>("Repair");
   const [hours, setHours] = useState("1.0");
   const [rate, setRate] = useState(LABOR_RATES["Repair"].toString());
@@ -50,6 +51,7 @@ export function AddLineDialog({ open, onOpenChange, claimId, onAdd }: Props) {
 
   const reset = () => {
     setAction("");
+    setDamage("");
     setType("Repair");
     setHours("1.0");
     setRate(LABOR_RATES["Repair"].toString());
@@ -60,17 +62,18 @@ export function AddLineDialog({ open, onOpenChange, claimId, onAdd }: Props) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!action.trim()) {
-      toast.error("Repair action name is required.");
+      toast.error("Damage + repair action name is required.");
       return;
     }
     if (!rationale.trim()) {
-      toast.error("Rationale is required when adding a repair action.");
+      toast.error("Rationale is required when adding a damage + repair action.");
       return;
     }
 
     const line: EstimateLine = {
       id: `l-agent-${Date.now()}`,
       action: action.trim(),
+      damage: damage.trim() || undefined,
       type,
       laborHours: parseFloat(hours) || 0,
       laborRate: parseFloat(rate) || 0,
@@ -89,7 +92,7 @@ export function AddLineDialog({ open, onOpenChange, claimId, onAdd }: Props) {
     };
 
     onAdd?.(line, rationale.trim());
-    toast.success(`Repair action added to ${claimId}`, {
+    toast.success(`Damage + repair action added to ${claimId}`, {
       description: `${line.action} — $${total.toLocaleString()} total.`,
     });
     reset();
@@ -102,24 +105,36 @@ export function AddLineDialog({ open, onOpenChange, claimId, onAdd }: Props) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Plus className="size-4" />
-            Add Repair Action
+            Add damage + repair action
           </DialogTitle>
           <DialogDescription>
-            Add a missing repair action to the AI estimate. Labor cost is calculated as hours × rate.
+            Add a missing damage finding and repair action to the AI estimate. Labor cost is calculated as hours × rate.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="action" className="text-xs font-semibold uppercase tracking-wider">
-              Repair Action <span className="text-destructive">*</span>
+              Damage + Repair Action <span className="text-destructive">*</span>
             </Label>
             <Input
               id="action"
               value={action}
               onChange={(e) => setAction(e.target.value)}
-              placeholder="e.g. Rear bumper reinforcement replacement"
+              placeholder="e.g. Rear bumper reinforcement"
               required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="damage" className="text-xs font-semibold uppercase tracking-wider">
+              Damage Descriptor
+            </Label>
+            <Input
+              id="damage"
+              value={damage}
+              onChange={(e) => setDamage(e.target.value)}
+              placeholder="e.g. dent, cracked, paint damage"
             />
           </div>
 
@@ -224,7 +239,7 @@ export function AddLineDialog({ open, onOpenChange, claimId, onAdd }: Props) {
               id="rationale"
               value={rationale}
               onChange={(e) => setRationale(e.target.value)}
-              placeholder="Explain why this repair action was missed by the AI and why it is needed (e.g. 'AI photo did not capture inner panel buckling visible on supplemental photos')."
+              placeholder="Explain why this damage + repair action was missed by the AI and why it is needed (e.g. 'AI photo did not capture inner panel buckling visible in supplemental photos')."
               rows={3}
               required
             />
@@ -241,7 +256,7 @@ export function AddLineDialog({ open, onOpenChange, claimId, onAdd }: Props) {
             >
               Cancel
             </Button>
-            <Button type="submit">Add Repair Action</Button>
+            <Button type="submit">Add damage + repair action</Button>
           </DialogFooter>
         </form>
       </DialogContent>
