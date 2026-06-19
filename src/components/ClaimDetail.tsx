@@ -163,6 +163,24 @@ export function ClaimDetail({
             {claim.estimate.summary}
           </p>
 
+          <div className="space-y-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              Detected:
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {claim.estimate.lines.map((line) => (
+                <span
+                  key={line.id}
+                  className="inline-flex items-center px-2.5 py-1 rounded-md bg-background border border-border text-xs text-foreground/90 shadow-sm"
+                >
+                  <span className="font-medium">{line.action}</span>
+                  <span className="mx-1.5 text-muted-foreground">—</span>
+                  <span className="text-muted-foreground">{line.type}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+
           {claim.flags.length > 0 ? (
             <div className="space-y-2 pt-1">
               {claim.flags.map((f, i) => (
