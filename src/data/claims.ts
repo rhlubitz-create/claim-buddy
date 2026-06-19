@@ -644,7 +644,7 @@ function consistencyMultiplierFor(flags: MismatchFlag[]): {
     };
   }
   const hasSevere = flags.some(
-    (f) => f.kind === "vehicle" || f.kind === "description",
+    (f) => f.kind === "vehicle" || f.kind === "description" || f.kind === "policy",
   );
   if (hasSevere) {
     return {
