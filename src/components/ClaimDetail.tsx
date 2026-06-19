@@ -11,9 +11,7 @@ import {
   Check,
   Sparkles,
   History,
-  FileText,
   PencilLine,
-  Bot,
   ArrowRight,
   Plus,
   XCircle,
@@ -49,7 +47,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import type { AuditEntry } from "@/data/claims";
 
 function confidencePillStyle(c: number) {
   if (c >= 85) return "bg-success/10 text-success ring-1 ring-success/20";
