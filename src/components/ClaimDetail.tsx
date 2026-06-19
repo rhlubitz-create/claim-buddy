@@ -158,23 +158,14 @@ export function ClaimDetail({
             <h2 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
               Damage Assessment Summary
             </h2>
-            <TooltipProvider delayDuration={150}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    onClick={() => setAddLineOpen(true)}
-                    className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    <Plus className="size-3.5" />
-                    damage
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="left">
-                  Add a damage the AI missed
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <button
+              type="button"
+              onClick={() => setAddLineOpen(true)}
+              className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
+            >
+              <Plus className="size-3.5" />
+              Damage
+            </button>
           </div>
 
           <p className="text-sm text-foreground/90 leading-relaxed">
