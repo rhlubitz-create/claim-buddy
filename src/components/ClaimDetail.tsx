@@ -167,11 +167,11 @@ export function ClaimDetail({
                     className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
                   >
                     <Plus className="size-3.5" />
-                    Add damage + repair action
+                    damage
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="left">
-                  Add a damage finding and repair action the AI missed
+                  Add a damage the AI missed
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
