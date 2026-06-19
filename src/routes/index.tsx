@@ -178,6 +178,34 @@ function Index() {
     );
   };
 
+  const handleAddLine = (
+    id: string,
+    line: EstimateLine,
+    rationale: string,
+  ) => {
+    setClaims((prev) =>
+      prev.map((c) => {
+        if (c.id !== id) return c;
+        const now = new Date().toISOString();
+        const entry: AuditEntry = {
+          at: now,
+          actor: "Alex Park (Claims Agent)",
+          kind: "line_added",
+          summary: `Repair action added: ${line.action}`,
+          detail: `Type: ${line.type}, labor ${line.laborHours}h × $${line.laborRate}/h, parts $${line.partsCost.toLocaleString()}. Rationale: "${rationale}"`,
+        };
+        return {
+          ...c,
+          estimate: {
+            ...c.estimate,
+            lines: [...c.estimate.lines, line],
+          },
+          auditLog: [...(c.auditLog ?? []), entry],
+        };
+      }),
+    );
+  };
+
   return (
     <div className="flex flex-col h-screen w-full bg-background font-sans text-sm text-foreground overflow-hidden">
       <div className="flex items-center gap-2 px-4 h-12 border-b border-border bg-card flex-shrink-0">
