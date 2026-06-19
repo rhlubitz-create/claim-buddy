@@ -246,7 +246,7 @@ export function ClaimDetail({
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider ring-1 ring-primary/20">
               <Sparkles className="size-3.5" />
-              AI Generated Damage Assessment and Cost Estimates
+              AI GENERATED REPAIR ACTIONS AND COST ESTIMATES
             </span>
           </div>
 
