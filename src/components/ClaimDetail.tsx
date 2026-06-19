@@ -51,6 +51,7 @@ type Props = {
   onDismissFlag?: (claimId: string, flagIndex: number) => void;
   onAccept?: (claimId: string) => void;
   onSaveOverride?: (claimId: string, lines: EstimateLine[]) => void;
+  onAddLine?: (claimId: string, line: EstimateLine, rationale: string) => void;
   onViewConfidence?: () => void;
 };
 
