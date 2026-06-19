@@ -523,26 +523,18 @@ export function generateEstimateForNewClaim(severity: Severity): Claim["estimate
   };
 }
 
-// Five equally-weighted signals (20% each) that the AI confidence pill
-// surfaces. Admins could re-weight these in the future, but for now they are
-// equal. Values are derived from each claim's photo / line items / historical
-// comparables so demo numbers stay internally consistent.
-export type ConfidenceMetric = {
-  key: "photoCompleteness" | "damageComplexity" | "repairScope" | "historicalMatch" | "claimConsistency";
-  label: string;
-  weight: number; // 0-1
-  score: number; // 0-100
-  detail: string;
-};
-
-// Per-line confidence is itself a weighted blend of four signals that the
-// model evaluates for each repair action. Sub-scores are derived
+// Per-line confidence is the simple average of four non-overlapping signals
+// the model evaluates for each repair action. Sub-scores are derived
 // deterministically from the line so they always average back to the
 // displayed line.confidence value.
 export type LineConfidenceFactor = {
-  key: "visualEvidence" | "actionFit" | "pricingFit" | "comparableStrength";
+  key:
+    | "damageClassification"
+    | "photoSufficiency"
+    | "costPrecision"
+    | "comparableStrength";
   label: string;
-  weight: number; // 0-1, equal across factors for now
+  weight: number; // 0-1, equal at 0.25 across all four factors
   score: number; // 0-100
   detail: string;
 };
@@ -586,28 +578,28 @@ export function getLineConfidenceBreakdown(line: EstimateLine): {
     overall: base,
     factors: [
       {
-        key: "visualEvidence",
-        label: "Visual evidence in photo",
+        key: "damageClassification",
+        label: "Damage classification confidence",
         weight: 0.25,
         score: scores[0],
         detail:
-          "How clearly the submitted photo shows the damage that this repair action targets — angle, lighting, and whether the affected panel is fully visible.",
+          "How confident the model is that this is the correct repair action for the damage visible in the photo (e.g. dent requiring PDR vs. crack requiring panel replacement). Identifies what's wrong before pricing it.",
       },
       {
-        key: "actionFit",
-        label: "Repair action fit",
+        key: "photoSufficiency",
+        label: "Photo evidence sufficiency",
         weight: 0.25,
         score: scores[1],
         detail:
-          "How well this specific action (replace vs. repair vs. refinish) matches the damage type and severity the model detected.",
+          "How much of this specific repair area is actually visible, in focus, and at a usable angle. Scoped to this line — a single photo set can have very different sufficiency scores per line.",
       },
       {
-        key: "pricingFit",
-        label: "Parts & labor pricing fit",
+        key: "costPrecision",
+        label: "Cost estimate precision",
         weight: 0.25,
         score: scores[2],
         detail:
-          "How closely the estimated labor hours and parts cost track the regional rate table and historical comparables for this action.",
+          "Given the classified damage, how tight the labor-hour and parts-cost band is based on historical density for this action × this vehicle type. Lower for rare combinations.",
       },
       {
         key: "comparableStrength",
@@ -615,115 +607,82 @@ export function getLineConfidenceBreakdown(line: EstimateLine): {
         weight: 0.25,
         score: scores[3],
         detail:
-          "How many similar past claims included this exact line item, and how tight the cost distribution was across them.",
+          "How many closely-matched historical repairs (same action, similar vehicle class & severity) exist, and how tightly their actual outcomes cluster — supporting evidence for the precision claim above.",
       },
     ],
   };
 }
 
-export function getConfidenceBreakdown(claim: Claim): {
-  metrics: ConfidenceMetric[];
+// Total claim confidence is a transparent two-step calculation:
+//   Step 1: rolledUp = simple avg of each line's confidence (each line
+//           is itself an equal-weight avg of its 4 sub-signals)
+//   Step 2: overall  = round(rolledUp × consistencyMultiplier)
+// The multiplier is 1.0 with no active flags; severe mismatches drop it
+// proportionally so the penalty is transparent rather than diluted into
+// a fixed equal-weight slice.
+export type ClaimConfidenceBreakdown = {
+  rolledUp: number;
+  lineContribs: { id: string; action: string; confidence: number }[];
+  multiplier: number;
+  multiplierLabel: string;
+  multiplierDetail: string;
+  activeFlags: MismatchFlag[];
   overall: number;
+};
+
+function consistencyMultiplierFor(flags: MismatchFlag[]): {
+  multiplier: number;
+  label: string;
+  detail: string;
 } {
+  if (flags.length === 0) {
+    return {
+      multiplier: 1.0,
+      label: "No active flags",
+      detail:
+        "Photo, vehicle, and severity classification all align. No consistency penalty applied.",
+    };
+  }
+  const hasSevere = flags.some(
+    (f) => f.kind === "vehicle" || f.kind === "description",
+  );
+  if (hasSevere) {
+    return {
+      multiplier: 0.65,
+      label: "Severe mismatch",
+      detail:
+        "Vehicle or description flag active — photo evidence does not match the reported claim. Heavy penalty applied until reviewed.",
+    };
+  }
+  return {
+    multiplier: 0.85,
+    label: "Moderate mismatch",
+    detail:
+      "Reported severity does not match photo evidence. Moderate penalty applied until the flag is reviewed.",
+  };
+}
+
+export function getConfidenceBreakdown(
+  claim: Claim,
+): ClaimConfidenceBreakdown {
   const lines = claim.estimate.lines;
-  const lineItemAvg = lines.length
+  const rolledUp = lines.length
     ? Math.round(lines.reduce((s, l) => s + l.confidence, 0) / lines.length)
     : 0;
-  const historicalMatch = claim.similar.length
-    ? Math.round(
-        claim.similar.reduce((s, x) => s + x.matchPct, 0) / claim.similar.length,
-      )
-    : 0;
+  const { multiplier, label, detail } = consistencyMultiplierFor(claim.flags);
+  const overall = Math.round(rolledUp * multiplier);
 
-  const hasPhotoMismatch = claim.flags.some(
-    (f) => f.kind === "description" || f.kind === "vehicle",
-  );
-  const hasSeverityFlag = claim.flags.some((f) => f.kind === "severity");
-  const hasPending = lines.some((l) =>
-    l.action.toLowerCase().includes("pending"),
-  );
-
-  // Photo & input quality: high when photo matches the reported damage; low
-  // when an explicit photo/vehicle mismatch flag was raised.
-  const photoCompleteness = hasPhotoMismatch ? 32 : hasSeverityFlag ? 64 : 84;
-
-  // Damage complexity & scope: simpler damage = higher confidence.
-  const complexityBase =
-    claim.accident.severity === "Severe"
-      ? 62
-      : claim.accident.severity === "Moderate"
-        ? 76
-        : 88;
-  const damageComplexity = Math.max(
-    25,
-    complexityBase - (claim.flags.length ? 10 : 0),
-  );
-
-  // Repair scope completeness: derived from line-item confidence, with a
-  // penalty when the scope contains pending or unconfirmed items.
-  const repairScope = hasPending
-    ? Math.round(lineItemAvg * 0.75)
-    : lineItemAvg;
-
-  // Claim consistency: penalized when any mismatch flag is active.
-  const claimConsistency = claim.flags.length > 0 ? 20 : 85;
-
-  const metrics: ConfidenceMetric[] = [
-    {
-      key: "photoCompleteness",
-      label: "Photo & input quality",
-      weight: 0.20,
-      score: photoCompleteness,
-      detail: hasPhotoMismatch
-        ? "Submitted photo does not match claim description or vehicle. Request additional documentation."
-        : hasSeverityFlag
-          ? "Single rear-quarter photo provided. Angle partially obscures taillamp area. Claimant description consistent with photo location."
-          : "Photo coverage, focus and angle align well with reported damage location.",
-    },
-    {
-      key: "damageComplexity",
-      label: "Damage complexity & scope",
-      weight: 0.20,
-      score: damageComplexity,
-      detail:
-        claim.accident.severity === "Severe"
-          ? "Multi-area damage (panel + taillamp + paint). Structural damage reported but unconfirmed — expands uncertainty window significantly."
-          : claim.accident.severity === "Moderate"
-            ? "Moderate cosmetic and minor structural damage. Scope is bounded to specific panels."
-            : "Minor cosmetic damage. Well-scoped to a single panel or small area.",
-    },
-    {
-      key: "repairScope",
-      label: "Repair scope completeness",
-      weight: 0.20,
-      score: repairScope,
-      detail: hasPending
-        ? `${lines.length} repair actions identified. 1 pending item — model cannot confirm scope is complete until inspection done.`
-        : `${lines.length} repair actions identified. Model can confirm scope is complete for all visible damage.`,
-    },
-    {
-      key: "historicalMatch",
-      label: "Historical match strength",
-      weight: 0.20,
-      score: historicalMatch,
-      detail: claim.similar.length
-        ? `${claim.similar.length} comparable closed claim${claim.similar.length === 1 ? "" : "s"} matched (${claim.similar.map((s) => `${s.matchPct}%`).join(" and ")}). Strong precedent for ${claim.accident.damageLocation.toLowerCase()} damage on similar vehicles.`
-        : "No comparable historical claims found.",
-    },
-    {
-      key: "claimConsistency",
-      label: "Claim consistency",
-      weight: 0.20,
-      score: claimConsistency,
-      detail: claim.flags.length
-        ? `Severity mismatch detected. Reported: ${claim.accident.severity} / ${claim.accident.damageType}. Photo evidence: cosmetic Level 1. Flagged for agent review.`
-        : "Photo, vehicle, and severity classification align. No inconsistencies detected.",
-    },
-  ];
-
-  const overall = Math.round(
-    metrics.reduce((s, m) => s + m.score * m.weight, 0),
-  );
-
-  return { metrics, overall };
+  return {
+    rolledUp,
+    lineContribs: lines.map((l) => ({
+      id: l.id,
+      action: l.action,
+      confidence: l.confidence,
+    })),
+    multiplier,
+    multiplierLabel: label,
+    multiplierDetail: detail,
+    activeFlags: claim.flags,
+    overall,
+  };
 }

@@ -71,7 +71,8 @@ export function ClaimDetail({
   const total = claim.estimate.lines.reduce((sum, l) => sum + lineTotal(l), 0);
   const laborTotal = claim.estimate.lines.reduce((s, l) => s + laborCostOf(l), 0);
   const partsTotal = claim.estimate.lines.reduce((s, l) => s + l.partsCost, 0);
-  const { metrics, overall } = getConfidenceBreakdown(claim);
+  const { overall, rolledUp, multiplier, multiplierLabel } =
+    getConfidenceBreakdown(claim);
 
   return (
     <main className="flex-1 flex flex-col bg-card overflow-hidden relative min-w-0">
@@ -404,11 +405,24 @@ export function ClaimDetail({
                             </div>
                           </div>
                           <p className="text-xs text-muted-foreground leading-relaxed">
-                            Weighted composite of 5 signals
-                            {claim.flags.length > 0
-                              ? " — currently penalized by an active flag."
-                              : "."}
+                            Two-step calculation: line rollup × consistency multiplier.
                           </p>
+                          <div className="text-[11px] font-mono bg-muted/40 rounded px-2.5 py-2 space-y-0.5">
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Line avg</span>
+                              <span className="font-semibold">{rolledUp}%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">
+                                × {multiplierLabel}
+                              </span>
+                              <span className="font-semibold">×{multiplier.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between border-t border-border/60 pt-1 mt-1">
+                              <span>= Overall</span>
+                              <span className="font-semibold">{overall}%</span>
+                            </div>
+                          </div>
                         </div>
                         <button
                           type="button"
