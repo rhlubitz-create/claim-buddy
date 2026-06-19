@@ -362,10 +362,10 @@ export function generateEstimateForNewClaim(severity: Severity): Claim["estimate
       summary:
         "Damage appears significant. Recommend panel replacement, headlamp/taillamp inspection, and full refinish. Structural inspection advised before final approval.",
       lines: [
-        { id: "l1", action: "Panel Replacement", type: "Replacement", laborHours: 4.5, laborRate: 95, partsCost: 950, confidence: 78 },
-        { id: "l2", action: "Lamp Assembly Replacement", type: "Replacement", laborHours: 1.2, laborRate: 95, partsCost: 300, confidence: 74 },
-        { id: "l3", action: "Paint & Refinish", type: "Refinish", laborHours: 5.0, laborRate: 120, partsCost: 280, confidence: 66 },
-        { id: "l4", action: "Structural Inspection", type: "Service", laborHours: 1.5, laborRate: 180, partsCost: 0, confidence: 55 },
+        { id: "l1", action: "Panel", damage: "replacement", type: "Replacement", laborHours: 4.5, laborRate: 95, partsCost: 950, confidence: 78 },
+        { id: "l2", action: "Lamp assembly", damage: "replacement", type: "Replacement", laborHours: 1.2, laborRate: 95, partsCost: 300, confidence: 74 },
+        { id: "l3", action: "Paint blend", damage: "refinish", type: "Refinish", laborHours: 5.0, laborRate: 120, partsCost: 280, confidence: 66 },
+        { id: "l4", action: "Structural inspection", damage: "service", type: "Service", laborHours: 1.5, laborRate: 180, partsCost: 0, confidence: 55 },
       ],
     };
   }
