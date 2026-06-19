@@ -105,24 +105,36 @@ export function AddLineDialog({ open, onOpenChange, claimId, onAdd }: Props) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Plus className="size-4" />
-            Add Repair Action
+            Add damage + repair action
           </DialogTitle>
           <DialogDescription>
-            Add a missing repair action to the AI estimate. Labor cost is calculated as hours × rate.
+            Add a missing damage finding and repair action to the AI estimate. Labor cost is calculated as hours × rate.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="action" className="text-xs font-semibold uppercase tracking-wider">
-              Repair Action <span className="text-destructive">*</span>
+              Damage + Repair Action <span className="text-destructive">*</span>
             </Label>
             <Input
               id="action"
               value={action}
               onChange={(e) => setAction(e.target.value)}
-              placeholder="e.g. Rear bumper reinforcement replacement"
+              placeholder="e.g. Rear bumper reinforcement"
               required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="damage" className="text-xs font-semibold uppercase tracking-wider">
+              Damage Descriptor
+            </Label>
+            <Input
+              id="damage"
+              value={damage}
+              onChange={(e) => setDamage(e.target.value)}
+              placeholder="e.g. dent, cracked, paint damage"
             />
           </div>
 
