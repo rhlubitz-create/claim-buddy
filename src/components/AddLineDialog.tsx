@@ -38,7 +38,6 @@ export function AddLineDialog({ open, onOpenChange, claimId, onAdd }: Props) {
   const [hours, setHours] = useState("1.0");
   const [rate, setRate] = useState(LABOR_RATES["Repair"].toString());
   const [parts, setParts] = useState("0");
-  const [confidence, setConfidence] = useState("75");
   const [rationale, setRationale] = useState("");
 
   const laborCost = Math.round((parseFloat(hours) || 0) * (parseFloat(rate) || 0));
@@ -55,7 +54,6 @@ export function AddLineDialog({ open, onOpenChange, claimId, onAdd }: Props) {
     setHours("1.0");
     setRate(LABOR_RATES["Repair"].toString());
     setParts("0");
-    setConfidence("75");
     setRationale("");
   };
 
