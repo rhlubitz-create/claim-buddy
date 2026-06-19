@@ -287,64 +287,7 @@ export function ClaimDetail({
                       )}
                     </td>
                     <td className="py-3 px-4 text-center">
-                      <TooltipProvider delayDuration={150}>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span
-                              className={cn(
-                                "inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-semibold cursor-help",
-                                confidencePillStyle(line.confidence),
-                              )}
-                            >
-                              {line.confidence}%
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent side="top" className="max-w-sm p-0 overflow-hidden">
-                            {(() => {
-                              const lb = getLineConfidenceBreakdown(line);
-                              return (
-                                <div className="text-left">
-                                  <div className="px-3 py-2 border-b bg-muted/40">
-                                    <p className="font-semibold text-xs">Line-item confidence · {line.confidence}%</p>
-                                    <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">
-                                      Weighted blend of 4 equally-weighted signals (25% each) the model scores per repair action.
-                                    </p>
-                                  </div>
-                                  <div className="px-3 py-2 space-y-2">
-                                    {lb.factors.map((f) => (
-                                      <div key={f.key} className="space-y-1">
-                                        <div className="flex items-center justify-between gap-2">
-                                          <span className="text-[11px] font-medium">{f.label}</span>
-                                          <span className="text-[11px] font-mono tabular-nums text-muted-foreground">
-                                            {f.score}% <span className="opacity-60">× 25%</span>
-                                          </span>
-                                        </div>
-                                        <div className="h-1 rounded bg-muted overflow-hidden">
-                                          <div
-                                            className={cn(
-                                              "h-full",
-                                              f.score >= 85
-                                                ? "bg-success"
-                                                : f.score >= 70
-                                                  ? "bg-warning"
-                                                  : "bg-destructive",
-                                            )}
-                                            style={{ width: `${f.score}%` }}
-                                          />
-                                        </div>
-                                        <p className="text-[10px] text-muted-foreground leading-snug">{f.detail}</p>
-                                      </div>
-                                    ))}
-                                  </div>
-                                  <div className="px-3 py-2 border-t bg-muted/30 text-[10px] font-mono text-muted-foreground">
-                                    Avg: ({lb.factors.map((f) => f.score).join(" + ")}) ÷ 4 = {line.confidence}%
-                                  </div>
-                                </div>
-                              );
-                            })()}
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                      <LineConfidencePopover line={line} />
                     </td>
 
                     <td className="py-3 px-4 text-right font-mono font-medium">
