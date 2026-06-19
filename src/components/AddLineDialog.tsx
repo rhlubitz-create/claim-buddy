@@ -118,27 +118,28 @@ export function AddLineDialog({ open, onOpenChange, claimId, onAdd }: Props) {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="action" className="text-xs font-semibold uppercase tracking-wider">
-              Damage + Repair Action <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="action"
-              value={action}
-              onChange={(e) => setAction(e.target.value)}
-              placeholder="e.g. Rear bumper reinforcement"
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
             <Label htmlFor="damage" className="text-xs font-semibold uppercase tracking-wider">
-              Damage Descriptor
+              Damage <span className="text-destructive">*</span>
             </Label>
             <Input
               id="damage"
               value={damage}
               onChange={(e) => setDamage(e.target.value)}
               placeholder="e.g. dent, cracked, paint damage"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="location" className="text-xs font-semibold uppercase tracking-wider">
+              Location <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="location"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="e.g. rear quarter panel, front bumper"
+              required
             />
           </div>
 
