@@ -244,7 +244,7 @@ export function AddLineDialog({ open, onOpenChange, claimId, onAdd }: Props) {
               id="rationale"
               value={rationale}
               onChange={(e) => setRationale(e.target.value)}
-              placeholder="Explain why this damage + repair action was missed by the AI and why it is needed (e.g. 'AI photo did not capture inner panel buckling visible in supplemental photos')."
+              placeholder="Explain why you added this additional damage detail + repair action."
               rows={3}
               required
             />
@@ -261,7 +261,7 @@ export function AddLineDialog({ open, onOpenChange, claimId, onAdd }: Props) {
             >
               Cancel
             </Button>
-            <Button type="submit">Add damage + repair action</Button>
+            <Button type="submit">Add damage</Button>
           </DialogFooter>
         </form>
       </DialogContent>
