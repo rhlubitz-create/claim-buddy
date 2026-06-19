@@ -294,8 +294,44 @@ export function ClaimDetail({
               </thead>
               <tbody className="divide-y divide-border/60">
                 {claim.estimate.lines.map((line) => (
-                  <tr key={line.id} className="text-sm">
-                    <td className="py-3 px-4">{line.action}</td>
+                  <tr
+                    key={line.id}
+                    className={cn(
+                      "text-sm",
+                      line.addedByAgent && "bg-warning/[0.06]",
+                    )}
+                  >
+                    <td
+                      className={cn(
+                        "py-3 px-4",
+                        line.addedByAgent &&
+                          "border-l-2 border-warning/60",
+                      )}
+                    >
+                      <span className="inline-flex items-center gap-1.5">
+                        {line.action}
+                        {line.addedByAgent && (
+                          <TooltipProvider delayDuration={150}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-warning/20 text-warning-foreground ring-1 ring-warning/40 text-[9px] font-bold uppercase tracking-widest cursor-help">
+                                  <PencilLine className="size-2.5" />
+                                  Added
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="max-w-xs">
+                                Added by {line.override?.by ?? "claims agent"}.
+                                {line.override?.rationale && (
+                                  <span className="block italic mt-1">
+                                    "{line.override.rationale}"
+                                  </span>
+                                )}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                      </span>
+                    </td>
                     <td className="py-3 px-4 text-muted-foreground text-xs">{line.type}</td>
                     <td className="py-3 px-4 text-right font-mono text-xs">
                       <EditedValueCell
