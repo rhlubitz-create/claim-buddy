@@ -155,7 +155,8 @@ export function ClaimDetail({
         {/* Section 1.5: Damage Assessment Summary */}
         <section className="rounded-md border border-border bg-secondary/30 p-4 space-y-3">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            <h2 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider ring-1 ring-primary/20">
+              <Sparkles className="size-3.5" />
               Damage Assessment Summary
             </h2>
             <button
