@@ -15,8 +15,10 @@ import {
   PencilLine,
   Bot,
   ArrowRight,
+  Plus,
 } from "lucide-react";
 import { OverrideDialog } from "./OverrideDialog";
+import { AddLineDialog } from "./AddLineDialog";
 import { toast } from "sonner";
 import {
   Popover,
