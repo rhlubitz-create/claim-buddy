@@ -554,16 +554,7 @@ export function ClaimDetail({
           </div>
 
           {/* Action buttons inline with AI estimate section */}
-          <div className="flex justify-between items-center gap-2 pt-1">
-            <button
-              type="button"
-              onClick={() => setAddLineOpen(true)}
-              className="text-xs flex items-center gap-1.5 px-3 py-2 rounded-sm border border-dashed border-border hover:border-primary/40 hover:bg-primary/[0.04] text-muted-foreground hover:text-primary transition-colors"
-            >
-              <Plus className="size-3.5" />
-              Add repair action
-            </button>
-            <div className="flex items-center gap-2">
+          <div className="flex justify-end items-center gap-2 pt-1">
               <button
                 onClick={() => setRejectOpen(true)}
                 className="px-4 py-2 text-sm border border-destructive/30 bg-card rounded-sm hover:bg-destructive/10 transition-colors text-destructive flex items-center gap-1.5"
@@ -590,7 +581,6 @@ export function ClaimDetail({
                 <Send className="size-3.5" />
                 Accept / Send for Review
               </button>
-            </div>
           </div>
         </section>
 
