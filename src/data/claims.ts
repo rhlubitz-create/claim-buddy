@@ -22,6 +22,7 @@ export type EstimateLine = {
   partsCost: number;
   confidence: number; // 0-100
   overridden?: boolean;
+  addedByAgent?: boolean; // true when a claims agent manually added this line
   override?: {
     by: string;
     rationale: string;
