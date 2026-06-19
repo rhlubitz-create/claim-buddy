@@ -4,7 +4,7 @@ import { CLAIMS, type Claim, type EstimateLine, type AuditEntry } from "@/data/c
 import { getConfidenceBreakdown } from "@/data/claims";
 import { ClaimsInbox } from "@/components/ClaimsInbox";
 import { ClaimDetail } from "@/components/ClaimDetail";
-import { SimilarClaimsRail } from "@/components/SimilarClaimsRail";
+import { ContextRail } from "@/components/ContextRail";
 import { SubmitClaim } from "@/components/SubmitClaim";
 import { ConfidenceBreakdown } from "@/components/ConfidenceBreakdown";
 import { cn } from "@/lib/utils";
@@ -269,8 +269,10 @@ function Index() {
                 onViewConfidence={() => setView("confidence")}
               />
               {railOpen && (
-                <SimilarClaimsRail
+                <ContextRail
                   similar={selected.similar}
+                  auditLog={selected.auditLog ?? []}
+                  claimId={selected.id}
                   onClose={() => setRailOpen(false)}
                 />
               )}
