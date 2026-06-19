@@ -17,16 +17,18 @@ type Props = {
 };
 
 export function ConfidenceBreakdown({ claim, onBack }: Props) {
-  const { metrics, overall } = getConfidenceBreakdown(claim);
+  const {
+    overall,
+    rolledUp,
+    lineContribs,
+    multiplier,
+    multiplierLabel,
+    multiplierDetail,
+    activeFlags,
+  } = getConfidenceBreakdown(claim);
   const level =
     overall >= 80 ? "High confidence" : overall >= 60 ? "Moderate confidence" : "Low confidence";
-
-  const withoutFlag = Math.round(
-    metrics.reduce(
-      (s, m) => s + (m.key === "claimConsistency" ? 85 : m.score) * m.weight,
-      0,
-    ),
-  );
+  const multiplierPct = Math.round(multiplier * 100);
 
   return (
     <main className="flex-1 flex flex-col bg-card overflow-hidden min-w-0">
@@ -58,67 +60,113 @@ export function ConfidenceBreakdown({ claim, onBack }: Props) {
               <div className="text-5xl font-bold tracking-tight">{overall}%</div>
               <div className="text-base font-medium text-foreground/80">{level}</div>
               <p className="text-sm text-muted-foreground leading-relaxed max-w-xl pt-2">
-                A weighted composite of five signals the model uses to gauge how reliable its
-                damage assessment and estimate are for this claim.
+                Two-step calculation: roll up the per-line confidences into a repair-plan
+                average, then apply a claim-level consistency multiplier driven by active
+                flags.
               </p>
             </div>
           </section>
 
           {/* Active flag callout */}
-          {claim.flags.length > 0 && (
+          {activeFlags.length > 0 && (
             <section className="bg-warning/10 border border-warning/25 rounded-md p-4">
               <div className="flex items-start gap-3">
                 <AlertTriangle className="size-5 text-warning-foreground flex-shrink-0 mt-0.5" />
                 <div className="space-y-1">
                   <p className="text-sm font-semibold text-foreground">
-                    Active flag is suppressing this score
+                    Consistency multiplier is suppressing this score
                   </p>
                   <p className="text-sm text-foreground/80 leading-relaxed">
-                    Claim consistency is penalized because reported severity (
-                    <span className="font-semibold">{claim.accident.severity}</span>) does not
-                    match photo evidence (cosmetic). Without this flag the score would be{" "}
-                    <span className="font-semibold">{withoutFlag}%</span>. Resolve the mismatch
-                    in the claim view to reassess.
+                    Rolled-up line confidence is{" "}
+                    <span className="font-semibold">{rolledUp}%</span>, but a{" "}
+                    <span className="font-semibold">{multiplierLabel.toLowerCase()}</span>{" "}
+                    applies a <span className="font-semibold">×{multiplier.toFixed(2)}</span>{" "}
+                    multiplier — dropping the total to {overall}%. Resolve the flag in the
+                    claim view to reassess.
                   </p>
                 </div>
               </div>
             </section>
           )}
 
-          {/* Metric cards */}
+          {/* Step 1: Line rollup */}
           <section className="space-y-3">
-            <h2 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              Signal breakdown
-            </h2>
-            <div className="space-y-3">
-              {metrics.map((m) => (
-                <MetricCard key={m.key} metric={m} />
-              ))}
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center justify-center size-5 rounded-full bg-primary/15 text-primary text-[10px] font-bold">
+                1
+              </span>
+              <h2 className="text-sm font-semibold">Roll up line items</h2>
+              <span className="text-xs text-muted-foreground">
+                Simple average of every repair action's confidence
+              </span>
+            </div>
+            <div className="border border-border rounded-md bg-card overflow-hidden">
+              <div className="divide-y divide-border">
+                {lineContribs.map((l) => (
+                  <LineRow key={l.id} action={l.action} score={l.confidence} />
+                ))}
+              </div>
+              <div className="flex items-center justify-between px-4 py-3 bg-muted/40 border-t border-border">
+                <div className="flex items-center gap-2">
+                  <Layers className="size-4 text-foreground/70" />
+                  <span className="text-sm font-semibold">
+                    Rolled-up repair-plan confidence
+                  </span>
+                </div>
+                <span className="text-lg font-bold tabular-nums">{rolledUp}%</span>
+              </div>
             </div>
           </section>
 
-          {/* Weighted calculation */}
-          <section className="bg-muted/40 border border-border rounded-md p-5 space-y-3">
+          {/* Step 2: Consistency multiplier */}
+          <section className="space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center justify-center size-5 rounded-full bg-primary/15 text-primary text-[10px] font-bold">
+                2
+              </span>
+              <h2 className="text-sm font-semibold">
+                Apply claim-level consistency multiplier
+              </h2>
+            </div>
+            <div
+              className={cn(
+                "border rounded-md p-4 flex items-start gap-4",
+                activeFlags.length === 0
+                  ? "border-success/30 bg-success/5"
+                  : multiplier <= 0.7
+                    ? "border-destructive/30 bg-destructive/5"
+                    : "border-warning/30 bg-warning/5",
+              )}
+            >
+              <ShieldAlert className="size-5 text-foreground/70 flex-shrink-0 mt-0.5" />
+              <div className="flex-1 space-y-1">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm font-semibold">{multiplierLabel}</span>
+                  <span className="text-lg font-bold tabular-nums">
+                    ×{multiplier.toFixed(2)}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {multiplierDetail}
+                </p>
+                <p className="text-[11px] text-muted-foreground pt-1">
+                  Severity-mismatch flags apply ×0.85; vehicle or description mismatches apply
+                  ×0.65. With no active flags the multiplier is ×1.00.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* Final calculation */}
+          <section className="bg-muted/40 border border-border rounded-md p-5 space-y-2">
             <div className="flex items-center gap-2">
               <Sparkles className="size-4 text-primary" />
-              <h2 className="text-sm font-semibold">Weighted calculation</h2>
+              <h2 className="text-sm font-semibold">Final calculation</h2>
             </div>
-            <div className="font-mono text-xs text-foreground/80 leading-relaxed space-y-1.5">
+            <div className="font-mono text-xs text-foreground/80 leading-relaxed">
               <div>
-                {metrics
-                  .map((m) => `(${m.score} × ${Math.round(m.weight * 100)}%)`)
-                  .join("  +  ")}
-              </div>
-              <div>
-                ={" "}
-                {metrics.map((m) => (m.score * m.weight).toFixed(1)).join("  +  ")}
-              </div>
-              <div>
-                ={" "}
-                <span className="font-semibold text-foreground">
-                  {metrics.reduce((s, m) => s + m.score * m.weight, 0).toFixed(1)}%
-                </span>{" "}
-                → rounded to{" "}
+                Rolled-up line avg ({rolledUp}%) × Consistency multiplier (
+                {multiplier.toFixed(2)}) = {(rolledUp * multiplier).toFixed(1)}% → rounded to{" "}
                 <span className="font-semibold text-foreground">{overall}%</span>
               </div>
             </div>
@@ -130,13 +178,10 @@ export function ConfidenceBreakdown({ claim, onBack }: Props) {
               <RefreshCw className="size-3" />
               Recalculates on each agent action (override, flag review, new photo).
             </span>
-            <button
-              type="button"
-              className="pt-3 text-primary hover:underline flex items-center gap-1"
-            >
+            <span className="pt-3 flex items-center gap-1 text-muted-foreground">
               <Info className="size-3" />
-              Configure weights
-            </button>
+              Multiplier × {multiplierPct}%
+            </span>
           </div>
         </div>
       </div>
@@ -144,64 +189,26 @@ export function ConfidenceBreakdown({ claim, onBack }: Props) {
   );
 }
 
-function MetricCard({ metric }: { metric: ConfidenceMetric }) {
+function LineRow({ action, score }: { action: string; score: number }) {
   const tone =
-    metric.score >= 80
+    score >= 80
       ? { text: "text-success", bar: "bg-success" }
-      : metric.score >= 50
+      : score >= 50
         ? { text: "text-warning-foreground", bar: "bg-chart-1" }
         : { text: "text-destructive", bar: "bg-destructive" };
-
   return (
-    <div className="border border-border rounded-md p-4 bg-card hover:bg-muted/20 transition-colors">
-      <div className="flex items-start gap-4">
-        <div className="size-9 rounded-sm bg-muted flex items-center justify-center flex-shrink-0">
-          <MetricIcon metricKey={metric.key} className="size-4 text-foreground/70" />
-        </div>
-        <div className="flex-1 min-w-0 space-y-2">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm font-semibold text-foreground">{metric.label}</span>
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono bg-muted text-muted-foreground">
-                Weight {Math.round(metric.weight * 100)}%
-              </span>
-            </div>
-            <span className={cn("text-lg font-bold tabular-nums", tone.text)}>
-              {metric.score}%
-            </span>
-          </div>
-          <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-            <div
-              className={cn("h-full rounded-full transition-all", tone.bar)}
-              style={{ width: `${metric.score}%` }}
-            />
-          </div>
-          <p className="text-xs text-muted-foreground leading-relaxed">{metric.detail}</p>
+    <div className="px-4 py-3 flex items-center gap-4">
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-medium truncate">{action}</div>
+        <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden mt-1.5">
+          <div className={cn("h-full rounded-full", tone.bar)} style={{ width: `${score}%` }} />
         </div>
       </div>
+      <span className={cn("text-sm font-mono font-semibold tabular-nums", tone.text)}>
+        {score}%
+      </span>
     </div>
   );
-}
-
-function MetricIcon({
-  metricKey,
-  className,
-}: {
-  metricKey: ConfidenceMetric["key"];
-  className?: string;
-}) {
-  switch (metricKey) {
-    case "photoCompleteness":
-      return <Camera className={className} />;
-    case "damageComplexity":
-      return <BarChart3 className={className} />;
-    case "repairScope":
-      return <ClipboardList className={className} />;
-    case "historicalMatch":
-      return <History className={className} />;
-    case "claimConsistency":
-      return <ShieldAlert className={className} />;
-  }
 }
 
 function DonutChart({
