@@ -1,36 +1,21 @@
-## Goal
-Eliminate the overlap between the Similar Historical Claims rail and the Audit Log sheet by merging them into a single right-side panel with two tabs: **Similar Claims** and **Audit Log**. Always-visible, no overlay, no sheet.
+## Plan: Revert to earlier Damage Assessment Summary with damage-focused labels
 
-## Changes
+### What we'll change
+1. **Revert the damage-assessment UI in `src/components/ClaimDetail.tsx`**
+   - Replace the current "Damage findings — from photo evidence" findings list with the earlier **Damage Assessment Summary** card.
+   - The card will sit between the Policyholder & Claim Information box and the AI estimate table, as before.
 
-### 1. New component: `src/components/ContextRail.tsx`
-- Fixed-width right sidebar (`w-80`), full height, flex column, border-left.
-- Top: tab strip with two pills — "Similar Claims" and "Audit Log" (with event count badge).
-- Active tab styled per the chosen prototype (white pill with subtle shadow on a slate background).
-- Body: scrollable area that renders either `<SimilarClaimsList>` or `<AuditLogList>` based on active tab.
-- Close button (X) in the corner to hide the entire rail (preserves existing collapse behavior).
-- Reuses existing similar-claim card markup and existing audit row + day-grouping logic.
+2. **Restyle the `Detected:` row and emphasize the damage term**
+   - Keep the chip format you picked: **"Rear quarter panel — dent"**.
+   - Render the `damage` value as the more prominent part (e.g., slightly heavier weight) and the `action`/`location` as secondary/muted text so the eye is drawn to the damage, not the repair action.
+   - Manually added items still show the "Added" warning styling.
 
-### 2. `src/components/ClaimDetail.tsx`
-- Remove the standalone `History` icon button that opened the audit sheet.
-- Keep "Show similar claims" button as the way to re-open the rail when collapsed (rename to "Show context" or similar).
-- Remove `AuditLogPanel` import + `auditOpen` state.
+3. **Keep the add/flag controls in the summary box**
+   - The **Add damage + repair action** button stays inside the summary section.
+   - Mismatch flags and the "mark as reviewed" control remain in this section, as in the earlier UI.
 
-### 3. `src/routes/index.tsx`
-- Replace `<SimilarClaimsRail>` render with `<ContextRail>`, passing `similar`, `auditLog`, `claimId`, and `onClose`.
+4. **No data-model changes**
+   - The existing `EstimateLine.action` and `EstimateLine.damage` fields already support this format, so only the presentation layer needs to change.
 
-### 4. Cleanup
-- Delete `src/components/AuditLogPanel.tsx` and `src/components/SimilarClaimsRail.tsx` once `ContextRail` covers their content (move the historical-claim Dialog detail view into `ContextRail` too).
-
-## Out of scope
-- No data model changes.
-- No changes to per-claim audit semantics or similar-claims data.
-- Bottom drawer / modal alternatives (rejected in favor of tabs).
-
-## Visual reference
-```text
-┌─ Claim Review ─────────────────┬─ [Similar Claims | Audit Log (6)] ─┐
-│  ...claim detail...            │  Active tab content scrolls here   │
-│                                │  Cards / timeline / day groups     │
-└────────────────────────────────┴────────────────────────────────────┘
-```
+### Outcome
+The claim detail page returns to the compact summary-card layout, with the `Detected:` chips reading like **"Rear quarter panel — dent"** while visually highlighting the damage portion.

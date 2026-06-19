@@ -152,82 +152,63 @@ export function ClaimDetail({
         </section>
 
 
-        {/* Section 1.5: Damage findings */}
-        <section className="rounded-md border border-border bg-secondary/30 p-4 space-y-4">
-          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-            <ImageIcon className="size-4 text-muted-foreground" />
-            <span>Damage findings — from photo evidence</span>
+        {/* Section 1.5: Damage Assessment Summary */}
+        <section className="rounded-md border border-border bg-secondary/30 p-4 space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              Damage Assessment Summary
+            </h2>
+            <TooltipProvider delayDuration={150}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={() => setAddLineOpen(true)}
+                    className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    <Plus className="size-3.5" />
+                    Add damage + repair action
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="left">
+                  Add a damage finding and repair action the AI missed
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
 
           <p className="text-sm text-foreground/90 leading-relaxed">
             {claim.estimate.summary}
           </p>
 
-          <div className="space-y-3">
-            <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              Findings
-            </h3>
-            <div className="space-y-2">
-              {claim.estimate.lines.map((line) => (
-                <div
-                  key={line.id}
-                  className={cn(
-                    "flex items-center justify-between p-3 rounded-md bg-background border border-border",
-                    line.addedByAgent && "bg-warning/[0.04] border-warning/30",
-                  )}
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span
-                      className={cn(
-                        "inline-flex items-center justify-center size-8 rounded-md bg-muted border border-border flex-shrink-0",
-                        line.addedByAgent && "bg-warning/15 border-warning/30",
-                      )}
-                    >
-                      {line.addedByAgent ? (
-                        <PencilLine className="size-3.5 text-warning-foreground" />
-                      ) : (
-                        <ImageIcon className="size-3.5 text-muted-foreground" />
-                      )}
-                    </span>
-                    <div className="flex items-center gap-1.5 text-sm min-w-0">
-                      <span className="font-medium truncate">{line.action}</span>
-                      <span className="text-muted-foreground">—</span>
-                      <span className="text-muted-foreground truncate">
-                        {line.damage ?? line.type}
-                      </span>
-                      {line.addedByAgent && (
-                        <span className="ml-1.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-warning/20 text-warning-foreground text-[9px] font-bold uppercase tracking-widest flex-shrink-0">
-                          Added
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0 ml-3">
-                    <ImageIcon className="size-3" />
-                    1 photo
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              Detected:
+            </span>
+            {claim.estimate.lines.map((line) => (
+              <span
+                key={line.id}
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-background border border-border text-xs",
+                  line.addedByAgent && "bg-warning/[0.06] border-warning/30",
+                )}
+              >
+                {line.addedByAgent && (
+                  <PencilLine className="size-3 text-warning-foreground" />
+                )}
+                <span className="text-muted-foreground">{line.action}</span>
+                <span className="text-muted-foreground">—</span>
+                <span className="font-semibold text-foreground">
+                  {line.damage ?? line.type}
+                </span>
+                {line.addedByAgent && (
+                  <span className="ml-0.5 inline-flex items-center px-1.5 py-0.5 rounded bg-warning/20 text-warning-foreground text-[9px] font-bold uppercase tracking-widest">
+                    Added
                   </span>
-                </div>
-              ))}
-            </div>
+                )}
+              </span>
+            ))}
           </div>
-
-          <TooltipProvider delayDuration={150}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onClick={() => setAddLineOpen(true)}
-                  className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors"
-                >
-                  <Plus className="size-3.5" />
-                  Add damage + repair action
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                Add a damage finding and repair action the AI missed
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
 
           {claim.flags.length > 0 ? (
             <div className="space-y-2 pt-1">
