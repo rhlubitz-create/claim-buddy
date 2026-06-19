@@ -123,46 +123,22 @@ export function AddLineDialog({ open, onOpenChange, claimId, onAdd }: Props) {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="type" className="text-xs font-semibold uppercase tracking-wider">
-                Type
-              </Label>
-              <Select value={type} onValueChange={(v) => handleTypeChange(v as EstimateLine["type"])}>
-                <SelectTrigger id="type">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {LINE_TYPES.map((t) => (
-                    <SelectItem key={t} value={t}>
-                      {t}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="confidence" className="text-xs font-semibold uppercase tracking-wider">
-                Confidence (%)
-              </Label>
-              <div className="relative">
-                <Input
-                  id="confidence"
-                  type="number"
-                  min="0"
-                  max="100"
-                  step="1"
-                  value={confidence}
-                  onChange={(e) => setConfidence(e.target.value)}
-                  className="pr-6 font-mono text-right"
-                  required
-                />
-                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
-                  %
-                </span>
-              </div>
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="type" className="text-xs font-semibold uppercase tracking-wider">
+              Type
+            </Label>
+            <Select value={type} onValueChange={(v) => handleTypeChange(v as EstimateLine["type"])}>
+              <SelectTrigger id="type">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {LINE_TYPES.map((t) => (
+                  <SelectItem key={t} value={t}>
+                    {t}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="grid grid-cols-3 gap-4">
