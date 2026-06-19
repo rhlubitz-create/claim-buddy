@@ -415,6 +415,55 @@ export const CLAIMS: Claim[] = [
   },
 ];
 
+// Out-of-policy demo claim — coverage is "Liability Only" which excludes
+// damage to the policyholder's own vehicle. Should be rejected on intake.
+CLAIMS.push({
+  id: "CLM-8501",
+  status: "New",
+  filedAt: "2026-06-05T08:14:00Z",
+  policyholder: {
+    userId: "850-12-007",
+    name: "Robert Hayes",
+    policyNumber: "P-85010044",
+    coverage: "Liability Only",
+  },
+  vehicle: { make: "Subaru", model: "Outback", year: 2017, vin: "4S4BSANC7H30XXXXX" },
+  accident: {
+    type: "Single-vehicle collision",
+    description:
+      "Driver lost control on wet road and struck a guardrail. Front-left fender and bumper damaged. Filing for own-vehicle repair costs.",
+    damageLocation: "Front-left fender & bumper",
+    damageType: "Impact / Scrape",
+    severity: "Moderate",
+  },
+  photo: claim8712,
+  flags: [
+    {
+      kind: "policy",
+      title: "Out of policy",
+      detail:
+        "Policyholder's coverage is 'Liability Only', which covers damage to other parties but excludes damage to the insured's own vehicle. This single-vehicle collision claim is not covered. Recommend rejection with explanation and offer to upgrade coverage.",
+    },
+  ],
+  estimate: {
+    overallConfidence: 38,
+    summary:
+      "Claim falls outside policy coverage. No estimate generated — recommend rejection at intake.",
+    lines: [
+      {
+        id: "l1",
+        action: "Coverage review — not covered under Liability Only policy",
+        type: "Service",
+        laborHours: 0,
+        laborRate: 180,
+        partsCost: 0,
+        confidence: 30,
+      },
+    ],
+  },
+  similar: [],
+});
+
 // Registry of known policyholders for the "Submit a Claim" lookup.
 // Entering a User ID in the form auto-fills name, policy #, and vehicle.
 export type PolicyholderRecord = {
