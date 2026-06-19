@@ -1,11 +1,8 @@
 import claim9022 from "@/assets/claim-9022.jpg";
-import claim8841 from "@/assets/claim-8841.jpg";
-import claim8712 from "@/assets/claim-8712.jpg";
-import claim8654 from "@/assets/claim-8654.jpg";
 import claim8590 from "@/assets/claim-8590.jpg";
+import claim8712 from "@/assets/claim-8712.jpg";
 import hist1205 from "@/assets/hist-1205.jpg";
 import hist0982 from "@/assets/hist-0982.jpg";
-import hist1418 from "@/assets/hist-1418.jpg";
 
 export type Severity = "Minor" | "Moderate" | "Severe";
 export type ClaimStatus = "New" | "In Review" | "Sent for Approval";
