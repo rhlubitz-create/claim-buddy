@@ -16,9 +16,21 @@ import {
   Bot,
   ArrowRight,
   Plus,
+  XCircle,
 } from "lucide-react";
 import { OverrideDialog } from "./OverrideDialog";
 import { AddLineDialog } from "./AddLineDialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
   Popover,
@@ -50,6 +62,7 @@ type Props = {
   onOpenRail: () => void;
   onDismissFlag?: (claimId: string, flagIndex: number) => void;
   onAccept?: (claimId: string) => void;
+  onReject?: (claimId: string, rationale: string) => void;
   onSaveOverride?: (claimId: string, lines: EstimateLine[]) => void;
   onAddLine?: (claimId: string, line: EstimateLine, rationale: string) => void;
   onViewConfidence?: () => void;
@@ -61,12 +74,14 @@ export function ClaimDetail({
   onOpenRail,
   onDismissFlag,
   onAccept,
+  onReject,
   onSaveOverride,
   onAddLine,
   onViewConfidence,
 }: Props) {
   const [overrideOpen, setOverrideOpen] = useState(false);
   const [addLineOpen, setAddLineOpen] = useState(false);
+  const [rejectOpen, setRejectOpen] = useState(false);
 
   const total = claim.estimate.lines.reduce((sum, l) => sum + lineTotal(l), 0);
   const laborTotal = claim.estimate.lines.reduce((s, l) => s + laborCostOf(l), 0);
@@ -461,6 +476,13 @@ export function ClaimDetail({
                 Override Estimate
               </button>
               <button
+                onClick={() => setRejectOpen(true)}
+                className="px-4 py-2 text-sm border border-destructive/30 bg-card rounded-sm hover:bg-destructive/10 transition-colors text-destructive flex items-center gap-1.5"
+              >
+                <XCircle className="size-3.5" />
+                Reject Claim
+              </button>
+              <button
                 onClick={() => {
                   toast.success(`Estimate accepted for ${claim.id}`, {
                     description: `Total: $${total.toLocaleString()}. Sent for final review.`,
@@ -491,6 +513,12 @@ export function ClaimDetail({
         onOpenChange={setAddLineOpen}
         claimId={claim.id}
         onAdd={(line, rationale) => onAddLine?.(claim.id, line, rationale)}
+      />
+      <RejectDialog
+        open={rejectOpen}
+        onOpenChange={setRejectOpen}
+        claimId={claim.id}
+        onConfirm={(rationale) => onReject?.(claim.id, rationale)}
       />
     </main>
   );
@@ -756,7 +784,81 @@ function auditMeta(kind: AuditEntry["kind"]) {
       return { icon: Plus, bg: "bg-primary/10", fg: "text-primary" };
     case "claim_accepted":
       return { icon: Send, bg: "bg-success/15", fg: "text-success" };
+    case "claim_rejected":
+      return { icon: XCircle, bg: "bg-destructive/10", fg: "text-destructive" };
   }
+}
+
+function RejectDialog({
+  open,
+  onOpenChange,
+  claimId,
+  onConfirm,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  claimId: string;
+  onConfirm: (rationale: string) => void;
+}) {
+  const [rationale, setRationale] = useState("");
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!rationale.trim()) {
+      toast.error("Rationale is required to reject a claim.");
+      return;
+    }
+    onConfirm(rationale.trim());
+    toast.success(`Claim ${claimId} rejected`, {
+      description: "Rationale logged for audit.",
+    });
+    setRationale("");
+    onOpenChange(false);
+  };
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        if (!o) setRationale("");
+        onOpenChange(o);
+      }}
+    >
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Reject Claim — {claimId}</DialogTitle>
+          <DialogDescription>
+            Provide a rationale for rejecting this claim. This will be logged for audit
+            and the claim will be removed from the active inbox.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label
+              htmlFor="reject-rationale"
+              className="text-xs font-semibold uppercase tracking-wider"
+            >
+              Rationale <span className="text-destructive">*</span>
+            </Label>
+            <Textarea
+              id="reject-rationale"
+              value={rationale}
+              onChange={(e) => setRationale(e.target.value)}
+              placeholder="Explain why this claim is being rejected (e.g. 'Out of policy — liability-only coverage does not include first-party vehicle repairs')."
+              rows={4}
+              required
+            />
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="destructive">
+              Reject Claim
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 function Field({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
