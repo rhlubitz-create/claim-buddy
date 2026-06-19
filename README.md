@@ -11,25 +11,6 @@ An AI-assisted car insurance claims review console. Policyholders submit acciden
 - **Overrides & Audit Trail** — Agents can override any line-item cost. Every override is stamped with the agent’s name, rationale, timestamp, and previous value.
 - **Flags & Review** — Claims may raise automatic flags (e.g., photo/description mismatch). Agents can review and dismiss them.
 
-## How to run / access the app
+## How to access the app
 
-### Local development
-
-```bash
-# Install dependencies
-bun install
-
-# Start the dev server
-bun run dev
-```
-
-The app will open at the local URL printed in your terminal (usually `http://localhost:3000`).
-
-### Preview & publish
-
-This project is managed in **Lovable**. The live preview updates automatically as you edit code.
-
-- **Preview URL** — Visit the project preview link in Lovable to see the latest build.
-- **Publish** — Use the Publish button in Lovable to deploy the app to a permanent public URL.
-
-No manual build or hosting setup is required; Lovable handles deployment.
+Navigate to this link: https://car-insurance-claim-buddy.lovable.app/
