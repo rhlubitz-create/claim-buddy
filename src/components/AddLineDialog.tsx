@@ -75,7 +75,7 @@ export function AddLineDialog({ open, onOpenChange, claimId, onAdd }: Props) {
       laborHours: parseFloat(hours) || 0,
       laborRate: parseFloat(rate) || 0,
       partsCost: parseFloat(parts) || 0,
-      confidence: parseInt(confidence, 10) || 75,
+      confidence: 0,
       overridden: true,
       addedByAgent: true,
       override: {
