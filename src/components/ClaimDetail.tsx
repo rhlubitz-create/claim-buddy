@@ -164,18 +164,51 @@ export function ClaimDetail({
           </p>
 
           <div className="space-y-1.5">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              Detected:
-            </span>
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                Detected:
+              </span>
+              <TooltipProvider delayDuration={150}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={() => setAddLineOpen(true)}
+                      aria-label="Add repair action"
+                      className="inline-flex items-center justify-center size-6 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                    >
+                      <Plus className="size-3.5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="left">
+                    Add a repair action the AI missed
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <div className="flex flex-wrap gap-2">
               {claim.estimate.lines.map((line) => (
                 <span
                   key={line.id}
-                  className="inline-flex items-center px-2.5 py-1 rounded-md bg-background border border-border text-xs text-foreground/90 shadow-sm"
+                  className={cn(
+                    "inline-flex items-center px-2.5 py-1 rounded-md text-xs shadow-sm",
+                    line.addedByAgent
+                      ? "bg-warning/15 text-warning-foreground ring-1 ring-warning/40 border border-warning/30"
+                      : "bg-background border border-border text-foreground/90",
+                  )}
+                  title={line.addedByAgent ? "Added by claims agent" : undefined}
                 >
+                  {line.addedByAgent && (
+                    <PencilLine className="size-2.5 mr-1" />
+                  )}
                   <span className="font-medium">{line.action}</span>
                   <span className="mx-1.5 text-muted-foreground">—</span>
                   <span className="text-muted-foreground">{line.type}</span>
+                  {line.addedByAgent && (
+                    <span className="ml-1.5 text-[9px] font-bold uppercase tracking-widest opacity-80">
+                      Added
+                    </span>
+                  )}
                 </span>
               ))}
             </div>
