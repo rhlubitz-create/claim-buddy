@@ -11,15 +11,14 @@ import {
   Check,
   Sparkles,
   History,
-  FileText,
   PencilLine,
-  Bot,
   ArrowRight,
   Plus,
   XCircle,
 } from "lucide-react";
 import { OverrideDialog } from "./OverrideDialog";
 import { AddLineDialog } from "./AddLineDialog";
+import { AuditLogPanel } from "./AuditLogPanel";
 import {
   Dialog,
   DialogContent,
@@ -48,7 +47,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import type { AuditEntry } from "@/data/claims";
 
 function confidencePillStyle(c: number) {
   if (c >= 85) return "bg-success/10 text-success ring-1 ring-success/20";
@@ -82,6 +80,7 @@ export function ClaimDetail({
   const [overrideOpen, setOverrideOpen] = useState(false);
   const [addLineOpen, setAddLineOpen] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
+  const [auditOpen, setAuditOpen] = useState(false);
 
   const total = claim.estimate.lines.reduce((sum, l) => sum + lineTotal(l), 0);
   const laborTotal = claim.estimate.lines.reduce((s, l) => s + laborCostOf(l), 0);
@@ -98,7 +97,17 @@ export function ClaimDetail({
           <span className="text-xs font-mono text-muted-foreground">#{claim.id}</span>
         </div>
         <div className="flex items-center gap-2">
-          <AuditLogPopover entries={claim.auditLog ?? []} />
+          <button
+            onClick={() => setAuditOpen(true)}
+            className="text-xs flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded hover:bg-secondary"
+            title="View audit log"
+          >
+            <History className="size-3.5" />
+            Audit Log
+            <span className="text-[10px] font-mono bg-background px-1 py-0.5 rounded border border-border">
+              {(claim.auditLog ?? []).length}
+            </span>
+          </button>
           {!railOpen && (
             <button
               onClick={onOpenRail}
@@ -520,6 +529,12 @@ export function ClaimDetail({
         claimId={claim.id}
         onConfirm={(rationale) => onReject?.(claim.id, rationale)}
       />
+      <AuditLogPanel
+        open={auditOpen}
+        onOpenChange={setAuditOpen}
+        claimId={claim.id}
+        entries={claim.auditLog ?? []}
+      />
     </main>
   );
 }
@@ -697,96 +712,6 @@ function EditedValueCell({
       </Tooltip>
     </TooltipProvider>
   );
-}
-
-function AuditLogPopover({ entries }: { entries: AuditEntry[] }) {
-  const sorted = [...entries].sort(
-    (a, b) => new Date(b.at).getTime() - new Date(a.at).getTime(),
-  );
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <button
-          className="text-xs flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded hover:bg-secondary"
-          title="View audit log"
-        >
-          <History className="size-3.5" />
-          Audit Log
-          <span className="text-[10px] font-mono bg-background px-1 py-0.5 rounded border border-border">
-            {sorted.length}
-          </span>
-        </button>
-      </PopoverTrigger>
-      <PopoverContent align="end" className="w-[28rem] max-h-[28rem] overflow-y-auto p-0">
-        <div className="px-4 py-3 border-b border-border">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-            Claim Audit Log
-          </p>
-        </div>
-        {sorted.length === 0 ? (
-          <p className="px-4 py-6 text-xs text-muted-foreground text-center">
-            No activity yet.
-          </p>
-        ) : (
-          <ol className="divide-y divide-border/60">
-            {sorted.map((e, i) => (
-              <AuditRow key={i} entry={e} />
-            ))}
-          </ol>
-        )}
-      </PopoverContent>
-    </Popover>
-  );
-}
-
-function AuditRow({ entry }: { entry: AuditEntry }) {
-  const meta = auditMeta(entry.kind);
-  const Icon = meta.icon;
-  return (
-    <li className="flex items-start gap-3 px-4 py-3">
-      <span
-        className={cn(
-          "mt-0.5 inline-flex items-center justify-center size-6 rounded-full flex-shrink-0",
-          meta.bg,
-        )}
-      >
-        <Icon className={cn("size-3.5", meta.fg)} />
-      </span>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-baseline justify-between gap-3">
-          <p className="text-xs font-medium text-foreground">{entry.summary}</p>
-          <span className="text-[10px] font-mono text-muted-foreground whitespace-nowrap">
-            {new Date(entry.at).toLocaleString()}
-          </span>
-        </div>
-        {entry.detail && (
-          <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
-            {entry.detail}
-          </p>
-        )}
-        <p className="text-[10px] text-muted-foreground/80 mt-1">by {entry.actor}</p>
-      </div>
-    </li>
-  );
-}
-
-function auditMeta(kind: AuditEntry["kind"]) {
-  switch (kind) {
-    case "claim_filed":
-      return { icon: FileText, bg: "bg-muted", fg: "text-muted-foreground" };
-    case "ai_estimate_generated":
-      return { icon: Bot, bg: "bg-primary/10", fg: "text-primary" };
-    case "flag_reviewed":
-      return { icon: Check, bg: "bg-success/15", fg: "text-success" };
-    case "override_saved":
-      return { icon: PencilLine, bg: "bg-warning/20", fg: "text-warning-foreground" };
-    case "line_added":
-      return { icon: Plus, bg: "bg-primary/10", fg: "text-primary" };
-    case "claim_accepted":
-      return { icon: Send, bg: "bg-success/15", fg: "text-success" };
-    case "claim_rejected":
-      return { icon: XCircle, bg: "bg-destructive/10", fg: "text-destructive" };
-  }
 }
 
 function RejectDialog({
