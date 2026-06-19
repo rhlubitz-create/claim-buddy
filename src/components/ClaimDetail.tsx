@@ -532,6 +532,12 @@ export function ClaimDetail({
         claimId={claim.id}
         onConfirm={(rationale) => onReject?.(claim.id, rationale)}
       />
+      <AuditLogPanel
+        open={auditOpen}
+        onOpenChange={setAuditOpen}
+        claimId={claim.id}
+        entries={claim.auditLog ?? []}
+      />
     </main>
   );
 }
