@@ -11,7 +11,7 @@ export type Severity = "Minor" | "Moderate" | "Severe";
 export type ClaimStatus = "New" | "In Review" | "Sent for Approval";
 
 export type MismatchFlag = {
-  kind: "severity" | "vehicle" | "description";
+  kind: "severity" | "vehicle" | "description" | "policy";
   title: string;
   detail: string;
 };
