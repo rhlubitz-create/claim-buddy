@@ -79,6 +79,7 @@ export function AddLineDialog({ open, onOpenChange, claimId, onAdd }: Props) {
       partsCost: parseFloat(parts) || 0,
       confidence: parseInt(confidence, 10) || 75,
       overridden: true,
+      addedByAgent: true,
       override: {
         by: "Alex Park (Claims Agent)",
         rationale: rationale.trim(),
