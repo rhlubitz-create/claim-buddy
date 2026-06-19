@@ -1,14 +1,11 @@
 import { cn } from "@/lib/utils";
-import type { Claim, ConfidenceMetric } from "@/data/claims";
+import type { Claim } from "@/data/claims";
 import { getConfidenceBreakdown } from "@/data/claims";
 import {
   AlertTriangle,
   ArrowLeft,
-  BarChart3,
-  Camera,
-  ClipboardList,
-  History,
   Info,
+  Layers,
   RefreshCw,
   ShieldAlert,
   Sparkles,
