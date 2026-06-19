@@ -239,6 +239,14 @@ function Index() {
 
       {tab === "submit" ? (
         <SubmitClaim onSubmit={handleSubmit} />
+      ) : claims.length === 0 ? (
+        <div className="flex flex-1 flex-col items-center justify-center text-center px-6 bg-card/30">
+          <Inbox className="size-10 text-muted-foreground/50 mb-4" />
+          <h2 className="text-lg font-semibold text-foreground">No Items in Inbox</h2>
+          <p className="text-sm text-muted-foreground mt-1 max-w-sm">
+            All claims have been sent for review or rejected. New submissions will appear here.
+          </p>
+        </div>
       ) : (
         <div className="flex flex-1 overflow-hidden">
           <ClaimsInbox
