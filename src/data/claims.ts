@@ -700,7 +700,7 @@ function consistencyMultiplierFor(flags: MismatchFlag[]): {
       multiplier: 0.65,
       label: "Severe mismatch",
       detail:
-        "Vehicle or description flag active — photo evidence does not match the reported claim. Heavy penalty applied until reviewed.",
+        "Severe flag active (vehicle, description, or policy coverage) — claim cannot be validated against the submitted evidence or coverage. Heavy penalty applied until reviewed.",
     };
   }
   return {
