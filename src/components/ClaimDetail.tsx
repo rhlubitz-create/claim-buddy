@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { OverrideDialog } from "./OverrideDialog";
 import { AddLineDialog } from "./AddLineDialog";
+import { AuditLogPanel } from "./AuditLogPanel";
 import {
   Dialog,
   DialogContent,
@@ -82,6 +83,7 @@ export function ClaimDetail({
   const [overrideOpen, setOverrideOpen] = useState(false);
   const [addLineOpen, setAddLineOpen] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
+  const [auditOpen, setAuditOpen] = useState(false);
 
   const total = claim.estimate.lines.reduce((sum, l) => sum + lineTotal(l), 0);
   const laborTotal = claim.estimate.lines.reduce((s, l) => s + laborCostOf(l), 0);
@@ -98,7 +100,17 @@ export function ClaimDetail({
           <span className="text-xs font-mono text-muted-foreground">#{claim.id}</span>
         </div>
         <div className="flex items-center gap-2">
-          <AuditLogPopover entries={claim.auditLog ?? []} />
+          <button
+            onClick={() => setAuditOpen(true)}
+            className="text-xs flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded hover:bg-secondary"
+            title="View audit log"
+          >
+            <History className="size-3.5" />
+            Audit Log
+            <span className="text-[10px] font-mono bg-background px-1 py-0.5 rounded border border-border">
+              {(claim.auditLog ?? []).length}
+            </span>
+          </button>
           {!railOpen && (
             <button
               onClick={onOpenRail}
