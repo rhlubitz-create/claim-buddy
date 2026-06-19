@@ -10,7 +10,6 @@ import {
   Info,
   Check,
   Sparkles,
-  History,
   PencilLine,
   ArrowRight,
   Plus,
