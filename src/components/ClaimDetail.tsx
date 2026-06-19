@@ -487,26 +487,36 @@ export function ClaimDetail({
           </div>
 
           {/* Action buttons inline with AI estimate section */}
-          <div className="flex justify-end items-center gap-2 pt-1">
+          <div className="flex justify-between items-center gap-2 pt-1">
             <button
-              onClick={() => setOverrideOpen(true)}
-              className="px-4 py-2 text-sm border border-border bg-card rounded-sm hover:bg-secondary transition-colors text-foreground/80"
+              type="button"
+              onClick={() => setAddLineOpen(true)}
+              className="text-xs flex items-center gap-1.5 px-3 py-2 rounded-sm border border-dashed border-border hover:border-primary/40 hover:bg-primary/[0.04] text-muted-foreground hover:text-primary transition-colors"
             >
-              Override Estimate
+              <Plus className="size-3.5" />
+              Add repair action
             </button>
-            <button
-              onClick={() => {
-                toast.success(`Estimate accepted for ${claim.id}`, {
-                  description: `Total: $${total.toLocaleString()}. Sent for final review.`,
-                  icon: <Send className="size-4" />,
-                });
-                onAccept?.(claim.id);
-              }}
-              className="px-6 py-2 text-sm font-semibold bg-primary text-primary-foreground rounded-sm hover:brightness-110 transition-all flex items-center gap-2"
-            >
-              <Send className="size-3.5" />
-              Accept / Send for Review
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setOverrideOpen(true)}
+                className="px-4 py-2 text-sm border border-border bg-card rounded-sm hover:bg-secondary transition-colors text-foreground/80"
+              >
+                Override Estimate
+              </button>
+              <button
+                onClick={() => {
+                  toast.success(`Estimate accepted for ${claim.id}`, {
+                    description: `Total: $${total.toLocaleString()}. Sent for final review.`,
+                    icon: <Send className="size-4" />,
+                  });
+                  onAccept?.(claim.id);
+                }}
+                className="px-6 py-2 text-sm font-semibold bg-primary text-primary-foreground rounded-sm hover:brightness-110 transition-all flex items-center gap-2"
+              >
+                <Send className="size-3.5" />
+                Accept / Send for Review
+              </button>
+            </div>
           </div>
         </section>
 
@@ -518,6 +528,12 @@ export function ClaimDetail({
         lines={claim.estimate.lines}
         claimId={claim.id}
         onSave={(updated) => onSaveOverride?.(claim.id, updated)}
+      />
+      <AddLineDialog
+        open={addLineOpen}
+        onOpenChange={setAddLineOpen}
+        claimId={claim.id}
+        onAdd={(line, rationale) => onAddLine?.(claim.id, line, rationale)}
       />
     </main>
   );
