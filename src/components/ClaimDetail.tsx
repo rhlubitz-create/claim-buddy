@@ -725,6 +725,8 @@ function auditMeta(kind: AuditEntry["kind"]) {
       return { icon: Check, bg: "bg-success/15", fg: "text-success" };
     case "override_saved":
       return { icon: PencilLine, bg: "bg-warning/20", fg: "text-warning-foreground" };
+    case "line_added":
+      return { icon: Plus, bg: "bg-primary/10", fg: "text-primary" };
     case "claim_accepted":
       return { icon: Send, bg: "bg-success/15", fg: "text-success" };
   }
