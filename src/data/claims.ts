@@ -578,28 +578,28 @@ export function getLineConfidenceBreakdown(line: EstimateLine): {
     overall: base,
     factors: [
       {
-        key: "visualEvidence",
-        label: "Visual evidence in photo",
+        key: "damageClassification",
+        label: "Damage classification confidence",
         weight: 0.25,
         score: scores[0],
         detail:
-          "How clearly the submitted photo shows the damage that this repair action targets — angle, lighting, and whether the affected panel is fully visible.",
+          "How confident the model is that this is the correct repair action for the damage visible in the photo (e.g. dent requiring PDR vs. crack requiring panel replacement). Identifies what's wrong before pricing it.",
       },
       {
-        key: "actionFit",
-        label: "Repair action fit",
+        key: "photoSufficiency",
+        label: "Photo evidence sufficiency",
         weight: 0.25,
         score: scores[1],
         detail:
-          "How well this specific action (replace vs. repair vs. refinish) matches the damage type and severity the model detected.",
+          "How much of this specific repair area is actually visible, in focus, and at a usable angle. Scoped to this line — a single photo set can have very different sufficiency scores per line.",
       },
       {
-        key: "pricingFit",
-        label: "Parts & labor pricing fit",
+        key: "costPrecision",
+        label: "Cost estimate precision",
         weight: 0.25,
         score: scores[2],
         detail:
-          "How closely the estimated labor hours and parts cost track the regional rate table and historical comparables for this action.",
+          "Given the classified damage, how tight the labor-hour and parts-cost band is based on historical density for this action × this vehicle type. Lower for rare combinations.",
       },
       {
         key: "comparableStrength",
@@ -607,7 +607,7 @@ export function getLineConfidenceBreakdown(line: EstimateLine): {
         weight: 0.25,
         score: scores[3],
         detail:
-          "How many similar past claims included this exact line item, and how tight the cost distribution was across them.",
+          "How many closely-matched historical repairs (same action, similar vehicle class & severity) exist, and how tightly their actual outcomes cluster — supporting evidence for the precision claim above.",
       },
     ],
   };
