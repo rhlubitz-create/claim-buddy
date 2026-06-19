@@ -113,46 +113,6 @@ export function ClaimDetail({
             Policyholder & Claim Information
           </h2>
 
-          {/* Flags banner */}
-          {claim.flags.length > 0 && (
-            <div className="space-y-2">
-              {claim.flags.map((f, i) => (
-                <div
-                  key={i}
-                  className="flex items-start gap-3 p-3 rounded-sm bg-destructive/5 border border-destructive/20"
-                >
-                  <AlertTriangle className="size-4 text-destructive flex-shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-destructive">{f.title}</p>
-                    <p className="text-xs text-foreground/80 mt-0.5">{f.detail}</p>
-                  </div>
-                  {onDismissFlag && (
-                    <button
-                      onClick={() => {
-                        onDismissFlag(claim.id, i);
-                        toast.success("Flag marked as reviewed", {
-                          description: f.title,
-                        });
-                      }}
-                      className="flex-shrink-0 text-[11px] flex items-center gap-1 px-2 py-1 rounded border border-destructive/30 text-destructive hover:bg-destructive/10 transition-colors"
-                    >
-                      <Check className="size-3" />
-                      Mark reviewed
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-          {claim.flags.length === 0 && (
-            <div className="flex items-center gap-2 p-2.5 rounded-sm bg-success/5 border border-success/20">
-              <CheckCircle2 className="size-4 text-success flex-shrink-0" />
-              <p className="text-xs text-foreground/80">
-                No mismatches detected. Photo, vehicle, and severity classification align.
-              </p>
-            </div>
-          )}
-
           <div className="grid grid-cols-[1.4fr_1fr] gap-6">
             <img
               src={claim.photo}
@@ -188,6 +148,57 @@ export function ClaimDetail({
           </div>
         </section>
 
+        {/* Section 1.5: Damage Assessment Summary + Flags */}
+        <section className="space-y-3 rounded-md border border-border bg-secondary/40 p-4">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-foreground/5 text-foreground text-xs font-bold uppercase tracking-wider ring-1 ring-foreground/10">
+              <Sparkles className="size-3.5" />
+              Damage Assessment Summary
+            </span>
+          </div>
+          <p className="text-sm text-foreground/90 leading-relaxed">
+            {claim.estimate.summary}
+          </p>
+
+          {claim.flags.length > 0 ? (
+            <div className="space-y-2 pt-1">
+              {claim.flags.map((f, i) => (
+                <div
+                  key={i}
+                  className="flex items-start gap-3 p-3 rounded-sm bg-destructive/5 border border-destructive/20"
+                >
+                  <AlertTriangle className="size-4 text-destructive flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-destructive">{f.title}</p>
+                    <p className="text-xs text-foreground/80 mt-0.5">{f.detail}</p>
+                  </div>
+                  {onDismissFlag && (
+                    <button
+                      onClick={() => {
+                        onDismissFlag(claim.id, i);
+                        toast.success("Flag marked as reviewed", {
+                          description: f.title,
+                        });
+                      }}
+                      className="flex-shrink-0 text-[11px] flex items-center gap-1 px-2 py-1 rounded border border-destructive/30 text-destructive hover:bg-destructive/10 transition-colors"
+                    >
+                      <Check className="size-3" />
+                      Mark reviewed
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 p-2.5 rounded-sm bg-success/5 border border-success/20">
+              <CheckCircle2 className="size-4 text-success flex-shrink-0" />
+              <p className="text-xs text-foreground/80">
+                No mismatches detected. Photo, vehicle, and severity classification align.
+              </p>
+            </div>
+          )}
+        </section>
+
         {/* Section 2: AI Estimate */}
         <section className="space-y-3 rounded-md border border-primary/25 bg-primary/[0.04] p-4 ring-1 ring-primary/10">
           <div className="flex items-center gap-2">
@@ -196,10 +207,6 @@ export function ClaimDetail({
               AI Generated Damage Assessment and Cost Estimates
             </span>
           </div>
-
-          <p className="text-xs text-foreground/80 italic leading-relaxed">
-            {claim.estimate.summary}
-          </p>
 
           <div className="border border-border rounded-sm overflow-hidden bg-card">
             <table className="w-full text-left border-collapse">
