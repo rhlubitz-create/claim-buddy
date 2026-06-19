@@ -34,6 +34,7 @@ const LINE_TYPES: EstimateLine["type"][] = ["Replacement", "Repair", "Refinish",
 
 export function AddLineDialog({ open, onOpenChange, claimId, onAdd }: Props) {
   const [action, setAction] = useState("");
+  const [damage, setDamage] = useState("");
   const [type, setType] = useState<EstimateLine["type"]>("Repair");
   const [hours, setHours] = useState("1.0");
   const [rate, setRate] = useState(LABOR_RATES["Repair"].toString());
@@ -50,6 +51,7 @@ export function AddLineDialog({ open, onOpenChange, claimId, onAdd }: Props) {
 
   const reset = () => {
     setAction("");
+    setDamage("");
     setType("Repair");
     setHours("1.0");
     setRate(LABOR_RATES["Repair"].toString());
