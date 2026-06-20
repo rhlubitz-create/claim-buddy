@@ -34,7 +34,7 @@ This prototype simulates an AI-assisted claims workflow:
   
 ## Prototype Notes
 
-This MVP demonstrates the end-to-end claims workflow. AI outputs are simulated using notional historical claim examples and simulated aI outputs to demonstrate the intended human-AI interaction pattern.
+This MVP demonstrates the end-to-end claims workflow. AI outputs are simulated using notional historical claim examples and simulated AI outputs to demonstrate the intended human-AI interaction pattern. The MVP was created with Lovable.
 
 ## How to access the app
 
