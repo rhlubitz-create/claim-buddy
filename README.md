@@ -2,7 +2,7 @@
 
 Claims agents spend significant time manually reviewing claim details, assessing vehicle damage, researching repair costs, and validating estimates. This creates operational bottlenecks and variability in initial repair estimates. Claims Buddy helps claims agents move from manual estimation workflows to AI-assisted review, enabling faster and more consistent repair estimates.
 
-# Claims Agent Inbox
+## Claims Agent Inbox
 
 An AI-assisted car insurance claims review console. Policyholders submit accident details and upload damage photos; claims agents review AI-generated repair estimates, compare them against historical claims, and approve or override line items with a full audit trail.
 
